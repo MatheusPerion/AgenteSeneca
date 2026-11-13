@@ -1,0 +1,20 @@
+# Dependências Python do Sêneca (app/). Crie o ambiente com uv (recomendado) ou pip:
+#   uv venv && uv pip install -r requirements.txt
+#   python -m venv .venv && .venv\Scripts\pip install -r requirements.txt
+#
+# GPU (opcional, acelera a transcrição — "dispositivo_transcricao": "auto" cai pro processador sem isso):
+#   uv pip install nvidia-cublas-cu12 nvidia-cudnn-cu12 nvidia-cuda-nvrtc-cu12
+
+aiohttp==3.14.5
+edge-tts==7.3.1
+faster-whisper==1.2.1
+miniaudio==1.72
+numpy==2.2.6
+onnxruntime==1.31.1
+pillow==13.0.0
+piper-tts==1.8.0
+psutil==7.2.2
+pynput==1.8.2
+pystray==0.19.5
+pythonnet==3.2.1
+sounddevice==0.5.6

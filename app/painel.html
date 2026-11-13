@@ -1,0 +1,1385 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sêneca — Centro de Comando</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --preto: #030504; --fundo: #070b08; --painel: #0b130e; --painel2: #0f1a13; --campo: #050906;
+    --linha: #1c3826; --linha2: #2b6144;
+    --verde: #3dff8f; --verde2: #22d672; --verde3: #12904c;
+    --texto: #ecf8ef; --suave: #b4cfbd; --nevoa: #86a690;
+    --ouro: #f0c75e; --sangue: #ff6170; --orvalho: #b2ffd6;
+    --cor-estado: var(--verde);
+    --display: "Cinzel", Georgia, serif; --corpo: "Inter", "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", Consolas, monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; color: var(--texto); font: 400 15px/1.55 var(--corpo); background: var(--preto); overflow-x: hidden;
+         -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(1000px 560px at 55% 12%, rgba(61,255,143,.07), transparent 65%),
+                radial-gradient(rgba(61,255,143,.07) 1px, transparent 1.4px) 0 0 / 24px 24px; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: var(--verde); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-thumb { background: var(--linha2); border-radius: 8px; } ::-webkit-scrollbar-track { background: transparent; }
+  ::selection { background: var(--verde3); color: #fff; }
+  :focus-visible { outline: 2px solid var(--verde); outline-offset: 2px; }
+
+  .app { position: relative; z-index: 1; display: grid; grid-template-columns: 258px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
+         min-height: 100vh; gap: 14px; padding: 14px 16px 18px; }
+
+  /* ---------- placas */
+  .p { position: relative; min-width: 0; padding: 16px 18px; background: linear-gradient(180deg, var(--painel2), var(--painel)); border: 1px solid var(--linha);
+       clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
+  .p::before { content: ""; position: absolute; top: 0; left: 0; width: 52px; height: 2px; background: var(--verde); box-shadow: 0 0 10px var(--verde); }
+  .ptit { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 14px; flex-wrap: wrap; }
+  .ptit h2 { margin: 0; font: 700 13px var(--corpo); letter-spacing: 1.4px; text-transform: uppercase; color: var(--texto); display: flex; align-items: baseline; gap: 10px; }
+  .ptit h2 em { font: 600 11.5px var(--display); letter-spacing: 2px; color: var(--nevoa); font-style: normal; text-transform: uppercase; }
+  .ptit small { font: 500 13px var(--corpo); color: var(--verde); }
+  .chip { display: inline-flex; align-items: center; gap: 5px; font: 600 11.5px var(--corpo); padding: 2px 9px; border: 1px solid currentColor; border-radius: 99px; white-space: nowrap; }
+  .c-verde { color: var(--verde); } .c-ouro { color: var(--ouro); } .c-sangue { color: var(--sangue); } .c-nevoa { color: var(--nevoa); } .c-orvalho { color: var(--orvalho); } .c-suave { color: var(--suave); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: currentColor; box-shadow: 0 0 8px currentColor; flex: none; }
+  .vivo { animation: pulsa 1.1s ease-in-out infinite; } @keyframes pulsa { 50% { opacity: .3; } }
+  .vazio { color: var(--nevoa); text-align: center; padding: 24px 10px; font-size: 14px; }
+  .muted { color: var(--suave); } .small { font-size: 13px; } .mono { font-family: var(--mono); }
+
+  /* ---------- botões e campos */
+  .bt { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--linha2); background: transparent; border-radius: 8px; padding: 6px 12px;
+        font: 600 13.5px var(--corpo); color: var(--suave); white-space: nowrap; }
+  .bt:hover { border-color: var(--verde); color: var(--verde); background: rgba(61,255,143,.06); }
+  .bt.forte { background: var(--verde); border-color: var(--verde); color: #04140a; } .bt.forte:hover { background: var(--orvalho); color: #04140a; }
+  .bt.perigo { border-color: rgba(255,97,112,.6); color: var(--sangue); } .bt.perigo:hover { background: var(--sangue); color: #1a0306; }
+  .bt.peq { padding: 4px 9px; font-size: 12.5px; }
+  .bt:disabled { opacity: .45; pointer-events: none; }
+  .campo { width: 100%; background: var(--campo); border: 1px solid var(--linha2); border-radius: 8px; padding: 9px 12px; color: var(--texto); font-size: 14.5px; }
+  .campo:focus { outline: none; border-color: var(--verde); box-shadow: 0 0 0 3px rgba(61,255,143,.15); }
+  textarea.campo { resize: vertical; min-height: 96px; line-height: 1.5; }
+  label.rot { display: block; font: 600 12.5px var(--corpo); color: var(--suave); margin: 10px 0 5px; }
+  .linha-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .chave { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 500; }
+  .chave input { display: none; }
+  .chave i { width: 40px; height: 22px; border-radius: 99px; background: var(--linha); position: relative; transition: .2s; border: 1px solid var(--linha2); }
+  .chave i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--nevoa); transition: .2s; }
+  .chave input:checked + i { background: var(--verde3); border-color: var(--verde); } .chave input:checked + i::after { left: 20px; background: var(--verde); }
+
+  /* ---------- topo */
+  .marca { grid-row: 1; grid-column: 1; display: flex; align-items: center; gap: 12px; }
+  .selo { width: 46px; height: 46px; flex: none; }
+  .marca b { display: block; font: 800 22px var(--display); letter-spacing: 3.5px; }
+  .marca span { font: 600 10.5px var(--corpo); letter-spacing: 2.4px; color: var(--verde); text-transform: uppercase; }
+  .topo { grid-row: 1; grid-column: 2; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .status { display: flex; align-items: center; gap: 10px; font: 600 12.5px var(--corpo); letter-spacing: 1px; color: var(--nevoa); padding: 8px 14px; border: 1px solid var(--linha); border-radius: 10px; background: var(--preto); text-transform: uppercase; }
+  .status .v { color: var(--cor-estado); display: flex; align-items: center; gap: 7px; }
+  .relogio { flex: 1; text-align: center; min-width: 220px; }
+  .relogio b { display: block; font: 700 30px var(--mono); letter-spacing: 2px; color: var(--verde); text-shadow: 0 0 16px rgba(61,255,143,.4); }
+  .relogio div { font: 500 13px var(--corpo); color: var(--suave); } .relogio div span { color: var(--nevoa); font: 600 12px var(--display); letter-spacing: 1.5px; margin-left: 10px; }
+  .clima-topo { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 1px solid var(--linha2); border-radius: 999px; background: rgba(0,0,0,.35); cursor: default; }
+  .clima-topo b { font: 700 16px var(--mono); color: var(--verde); } .clima-topo span { font: 500 13px var(--corpo); color: var(--suave); }
+
+  /* ---------- lateral */
+  .lado { grid-row: 2; grid-column: 1; display: flex; flex-direction: column; gap: 14px; }
+  .nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .nav a { display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: var(--suave); text-decoration: none; font-weight: 500; font-size: 14.5px; border-radius: 8px; border: 1px solid transparent; }
+  .nav a:hover { color: var(--texto); background: rgba(61,255,143,.05); }
+  .nav a.on { color: var(--texto); border-color: var(--linha2); background: linear-gradient(90deg, rgba(61,255,143,.12), transparent); font-weight: 600; }
+  .nav a.on i { color: var(--verde); }
+  .nav a i { font: 700 11.5px var(--display); font-style: normal; width: 30px; color: var(--nevoa); }
+  .nav a em { margin-left: auto; font: 700 11.5px var(--mono); font-style: normal; padding: 1px 8px; border-radius: 99px; color: #04140a; background: var(--verde2); }
+  .nav a em:empty { display: none; }
+  .nav a .dot + em { margin-left: 8px; }
+  .voz { display: flex; flex-direction: column; align-items: center; gap: 14px; padding-bottom: 20px; }
+  .voz .ptit { align-self: stretch; margin-bottom: 4px; }
+  .onda { display: flex; align-items: center; gap: 3px; height: 46px; }
+  .onda i { width: 3px; border-radius: 2px; background: var(--cor-estado); box-shadow: 0 0 6px var(--cor-estado); height: 4px; }
+  .onda.ativa i { animation: onda .9s ease-in-out infinite; }
+  @keyframes onda { 0%,100% { height: 4px; } 50% { height: var(--h, 30px); } }
+  .mic { width: 88px; height: 88px; display: grid; place-items: center; position: relative; background: var(--cor-estado);
+         clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+  .mic::before { content: ""; position: absolute; inset: 2px; background: radial-gradient(circle at 50% 40%, #143520, var(--preto)); clip-path: inherit; }
+  .mic svg { position: relative; width: 32px; height: 32px; fill: var(--cor-estado); }
+  .mic.ativa { animation: bate 1.2s ease-in-out infinite; } @keyframes bate { 50% { transform: scale(1.06); } }
+  .voz .legenda { text-align: center; color: var(--suave); font-size: 13px; }
+  .voz .legenda b { display: block; color: var(--texto); font: 700 17px var(--display); letter-spacing: 2px; }
+  .digitar { width: 100%; display: flex; gap: 6px; }
+  .digitar .campo { padding: 7px 10px; font-size: 13.5px; }
+
+  /* ---------- conteúdo */
+  #pagina { grid-row: 2; grid-column: 2; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .cab-pag { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 2px 4px 0; }
+  .cab-pag h1 { margin: 0; font: 700 27px var(--display); letter-spacing: 2px; }
+  .cab-pag h1 em { display: block; font: 600 12px var(--corpo); font-style: normal; letter-spacing: 2px; color: var(--verde); text-transform: uppercase; margin-bottom: 2px; }
+  .cab-pag p { margin: 4px 0 0; color: var(--suave); max-width: 720px; }
+  .grade { display: grid; gap: 14px; min-width: 0; }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g-12 { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  .lista { display: flex; flex-direction: column; gap: 7px; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 9px 11px; border: 1px solid var(--linha); border-radius: 10px; background: rgba(3,5,4,.5); min-width: 0; }
+  .item > div { flex: 1; min-width: 0; }
+  .ico { width: 34px; height: 34px; flex: none; display: grid; place-items: center; font: 700 12px var(--corpo); border: 1.5px solid currentColor;
+         clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: rgba(61,255,143,.06); }
+  .item b { display: block; font-weight: 600; font-size: 14.5px; } .item span.s { display: block; font-size: 13px; color: var(--suave); }
+  .corta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* centro de comando */
+  .dash { display: grid; gap: 14px; grid-template-columns: minmax(240px, 1fr) minmax(0, 1.85fr) minmax(280px, 1.25fr); grid-auto-rows: min-content; }
+  .dash .largo { grid-column: span 2; }
+  .emblema-p { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 360px; overflow: hidden; }
+  .emblema { position: relative; width: min(330px, 84%); aspect-ratio: 1; }
+  .emblema svg { width: 100%; height: 100%; overflow: visible; }
+  .emblema .nome { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; }
+  .emblema .nome b { font: 800 clamp(20px, 2.1vw, 28px) var(--display); letter-spacing: 4px; margin-right: -4px; text-shadow: 0 0 22px rgba(61,255,143,.35); }
+  .emblema .nome span { font: 600 10.5px var(--corpo); letter-spacing: 2px; color: var(--verde); }
+  .emblema .nome i { font: 700 11px var(--display); font-style: normal; letter-spacing: 2.5px; color: var(--nevoa); margin-top: 3px; }
+  body.trabalhando .gira { animation: giro 6s linear infinite; } .gira { transform-origin: 200px 200px; }
+  @keyframes giro { to { transform: rotate(360deg); } }
+  .citacao { margin-top: 8px; text-align: center; max-width: 92%; min-height: 3.2em; transition: opacity .6s; }
+  .citacao q { font: 600 17px/1.4 var(--display); color: var(--texto); quotes: "“" "”"; }
+  .citacao div { font: 500 12px var(--corpo); letter-spacing: 1.5px; color: var(--nevoa); margin-top: 6px; text-transform: uppercase; }
+  .citacao.agora q { color: var(--cor-estado); font: 500 16px var(--corpo); }
+  .feed { display: flex; flex-direction: column; max-height: 360px; overflow-y: auto; }
+  .fi { display: flex; gap: 11px; align-items: flex-start; padding: 9px 4px; border-bottom: 1px solid var(--linha); }
+  .fi .ico { width: 30px; height: 30px; font-size: 13px; }
+  .fi > div { flex: 1; min-width: 0; } .fi b { display: block; font-weight: 600; font-size: 14px; }
+  .fi span.s { font-size: 13px; color: var(--suave); display: block; }
+
+  /* tarefas do claude */
+  .tarefas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .tc { border: 1px solid var(--linha); border-radius: 10px; background: rgba(3,5,4,.55); padding: 12px 13px; display: flex; flex-direction: column; gap: 9px; position: relative; overflow: hidden; }
+  .tc.rodando { border-color: rgba(240,199,94,.7); } .tc.rodando::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--ouro); box-shadow: 0 0 10px var(--ouro); }
+  .tc .cab { display: flex; gap: 11px; align-items: center; } .tc .cab > div { flex: 1; min-width: 0; }
+  .tc .cab b { display: block; font-weight: 600; font-size: 15px; } .tc .cab span { font-size: 12.5px; color: var(--nevoa); }
+  .tc .ult { font-size: 13px; color: var(--suave); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.6em; }
+  .barra { height: 3px; background: var(--linha); overflow: hidden; border-radius: 2px; }
+  .barra i { display: block; height: 100%; width: 35%; background: var(--ouro); animation: corre 1.5s linear infinite; }
+  @keyframes corre { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+  .acoes { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+  /* linha do tempo */
+  .tempo { display: flex; flex-direction: column; max-height: 380px; overflow-y: auto; }
+  .ti { display: grid; grid-template-columns: 48px 16px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 4px; cursor: pointer; text-align: left; background: none; border: none; width: 100%; border-radius: 8px; }
+  .ti:hover { background: rgba(61,255,143,.05); }
+  .ti .h { color: var(--nevoa); font: 500 13px var(--mono); padding-top: 1px; }
+  .ti .l { position: relative; height: 100%; }
+  .ti .l::before { content: ""; position: absolute; left: 4px; top: 6px; width: 8px; height: 8px; background: currentColor; transform: rotate(45deg); }
+  .ti .l::after { content: ""; position: absolute; left: 7.5px; top: 17px; bottom: -12px; width: 1px; background: var(--linha); }
+  .ti .t b { display: block; font-weight: 600; font-size: 14px; } .ti .t span { display: block; font-size: 13px; color: var(--suave); }
+
+  .aneis { display: flex; justify-content: space-around; gap: 8px; flex-wrap: wrap; }
+  .anel { position: relative; width: 88px; height: 88px; } .anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .anel .tx { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .anel .tx span { font: 600 11px var(--corpo); letter-spacing: 1px; color: var(--suave); } .anel .tx b { font: 700 18px var(--mono); }
+  .numeros { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .num { padding: 10px 12px; border: 1px solid var(--linha); border-radius: 10px; background: rgba(3,5,4,.5); }
+  .num span { font-size: 12.5px; color: var(--suave); display: block; } .num b { font: 700 26px var(--mono); color: var(--verde); }
+
+  /* conversas */
+  .chat { display: flex; flex-direction: column; gap: 14px; max-height: calc(100vh - 330px); min-height: 300px; overflow-y: auto; padding: 4px 6px; }
+  .balao { max-width: 78%; padding: 10px 14px; border-radius: 14px; white-space: pre-wrap; line-height: 1.5; }
+  .balao.eu { align-self: flex-end; background: var(--verde3); color: #f2fff6; border-bottom-right-radius: 4px; }
+  .balao.ele { align-self: flex-start; background: var(--painel2); border: 1px solid var(--linha2); border-bottom-left-radius: 4px; }
+  .balao.erro { border-color: var(--sangue); color: var(--sangue); }
+  .balao .meta { display: block; font-size: 12px; color: var(--nevoa); margin-bottom: 3px; } .balao.eu .meta { color: #c5f2d5; }
+  .escrever { display: flex; gap: 8px; margin-top: 12px; } .escrever textarea { min-height: 52px; height: 52px; }
+
+  /* tarefas / checklist */
+  .check { display: flex; gap: 11px; align-items: flex-start; padding: 8px 6px; border-bottom: 1px solid var(--linha); cursor: pointer; }
+  .check .cx { width: 20px; height: 20px; border: 2px solid var(--linha2); border-radius: 5px; flex: none; display: grid; place-items: center; margin-top: 1px; }
+  .check.feito .cx { background: var(--verde); border-color: var(--verde); } .check.feito .cx::after { content: "✓"; color: #04140a; font-weight: 800; font-size: 13px; }
+  .check.feito span { color: var(--nevoa); text-decoration: line-through; }
+  .secao-t { font: 700 12.5px var(--corpo); letter-spacing: 1.2px; text-transform: uppercase; color: var(--verde); margin: 14px 0 4px; }
+
+  /* calendário */
+  .mes { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .mes .sem { font: 700 11.5px var(--corpo); letter-spacing: 1px; color: var(--nevoa); text-align: center; text-transform: uppercase; padding: 4px 0; }
+  .dia { min-height: 92px; border: 1px solid var(--linha); border-radius: 8px; padding: 6px 7px; background: rgba(3,5,4,.45); cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .dia:hover { border-color: var(--linha2); } .dia.fora { opacity: .3; } .dia.hoje { border-color: var(--verde); box-shadow: inset 0 0 0 1px var(--verde); }
+  .dia.sel { background: rgba(61,255,143,.1); border-color: var(--verde); }
+  .dia .n { font: 700 14px var(--mono); } .dia.hoje .n { color: var(--verde); }
+  .dia .m { font-size: 11.5px; color: var(--suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dia .m.ev { color: var(--orvalho); } .dia .m.pz { color: var(--ouro); }
+
+  /* memória */
+  .notas-lista { max-height: calc(100vh - 290px); overflow-y: auto; }
+  .nota-bt { display: block; width: 100%; text-align: left; padding: 8px 10px; border: none; background: none; border-radius: 8px; color: var(--suave); }
+  .nota-bt:hover { background: rgba(61,255,143,.06); color: var(--texto); } .nota-bt.sel { background: rgba(61,255,143,.12); color: var(--texto); font-weight: 600; }
+  .nota-bt small { display: block; color: var(--nevoa); font-size: 12px; }
+  .md { line-height: 1.65; } .md h3 { font: 700 18px var(--display); letter-spacing: 1px; margin: 18px 0 6px; color: var(--verde); }
+  .md h4 { font: 700 15px var(--corpo); margin: 14px 0 4px; } .md p { margin: 7px 0; } .md ul, .md ol { margin: 6px 0; padding-left: 24px; }
+  .md li { margin: 3px 0; } .md code { font: 13px var(--mono); background: rgba(61,255,143,.1); color: var(--orvalho); padding: 1px 6px; border-radius: 4px; }
+  .md .wl { color: var(--verde); border-bottom: 1px dotted var(--verde); } .md hr { border: none; border-top: 1px solid var(--linha); }
+  .md input[type=checkbox] { accent-color: var(--verde); }
+
+  /* fluxos */
+  .fluxo { padding: 14px; border: 1px solid var(--linha); border-radius: 12px; background: rgba(3,5,4,.5); display: flex; flex-direction: column; gap: 9px; }
+  .fluxo .topo-f { display: flex; gap: 12px; align-items: center; } .fluxo .topo-f b { font-size: 16px; font-weight: 700; }
+  .fluxo .ico { width: 40px; height: 40px; font-size: 17px; }
+
+  /* gaveta, confirmação e aviso */
+  .veu { position: fixed; inset: 0; background: rgba(0,0,0,.66); z-index: 20; }
+  .gaveta { position: fixed; top: 0; right: 0; bottom: 0; width: min(680px, 100%); z-index: 21; background: var(--fundo); border-left: 2px solid var(--verde);
+            box-shadow: -20px 0 50px rgba(0,0,0,.6); display: flex; flex-direction: column; }
+  .gaveta header { padding: 18px 20px; border-bottom: 1px solid var(--linha); display: flex; gap: 10px; align-items: flex-start; }
+  .gaveta header > div { flex: 1; min-width: 0; } .gaveta header h3 { margin: 2px 0 10px; font: 700 19px var(--display); letter-spacing: 1.5px; }
+  .gaveta .meta { color: var(--nevoa); font-size: 13px; }
+  .gaveta .corpo { flex: 1; overflow-y: auto; padding: 16px 20px 34px; }
+  .sec { margin-bottom: 20px; } .sec > b { display: block; font: 700 12.5px var(--corpo); letter-spacing: 1.4px; color: var(--verde); margin-bottom: 8px; text-transform: uppercase; }
+  .caixa { border: 1px solid var(--linha); border-radius: 10px; background: rgba(3,5,4,.6); padding: 11px 13px; white-space: pre-wrap; }
+  .caixa.md { white-space: normal; }
+  .passos { list-style: none; margin: 0; padding: 0 0 0 6px; border-left: 1px solid var(--linha2); }
+  .passo { padding: 6px 0 6px 16px; position: relative; }
+  .passo::before { content: ""; position: absolute; left: -4px; top: 13px; width: 7px; height: 7px; background: var(--verde); transform: rotate(45deg); }
+  .passo.falhou::before { background: var(--sangue); } .passo.falhou .tit { color: var(--sangue); }
+  .passo .tit { font-weight: 600; } .passo .det { color: var(--suave); font-size: 13px; word-break: break-word; }
+  .passo .said { color: var(--nevoa); font: 12.5px var(--mono); white-space: pre-wrap; max-height: 4.6em; overflow: hidden; }
+  .passo.texto { color: var(--suave); white-space: pre-wrap; } .passo.texto::before { background: var(--orvalho); }
+  .passo.info, .passo.aviso { color: var(--nevoa); font-size: 13px; } .passo.aviso { color: var(--ouro); }
+  .modal { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(0,0,0,.6); padding: 16px; }
+  .modal > div { width: min(460px, 100%); background: var(--fundo); border: 1px solid var(--linha2); border-top: 2px solid var(--verde); border-radius: 12px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  .modal h4 { margin: 0 0 8px; font: 700 18px var(--display); letter-spacing: 1px; } .modal p { margin: 0 0 18px; color: var(--suave); white-space: pre-wrap; }
+  .modal .acoes { justify-content: flex-end; }
+  #aviso { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 50; background: var(--painel2); border: 1px solid var(--verde); color: var(--texto);
+           padding: 10px 18px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.5); font-weight: 500; max-width: min(640px, 92vw); }
+  #aviso.erro { border-color: var(--sangue); }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--linha2); border-top-color: var(--verde); border-radius: 50%; animation: giro .8s linear infinite; vertical-align: -2px; }
+
+  @media (max-width: 1420px) { .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); } .dash .emblema-p { grid-column: 1 / -1; grid-row: 1; } .dash .largo { grid-column: 1 / -1; } }
+  @media (max-width: 1100px) { .g3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .g-12 { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; } .marca, .topo, .lado, #pagina { grid-column: 1; } .topo { grid-row: 2; } .lado { grid-row: 3; } #pagina { grid-row: 4; }
+    .nav { flex-direction: row; flex-wrap: wrap; } .voz { display: none; } .dash, .g2, .g3 { grid-template-columns: 1fr; } .mes { gap: 3px; } .dia { min-height: 64px; }
+  }
+
+  /* =====================================================================
+     TEMA VIDRO — limpo, translúcido, cantos arredondados, luz verde ao fundo
+     ===================================================================== */
+  :root {
+    --vidro: rgba(10, 26, 17, .52); --vidro2: rgba(14, 36, 24, .55); --borda-vidro: rgba(61, 255, 143, .16);
+    --brilho-verde: 0 0 24px rgba(61, 255, 143, .45);
+    --linha: rgba(61, 255, 143, .12); --linha2: rgba(61, 255, 143, .26);
+  }
+  body { background: #020504; }
+  /* faixas de luz verde desfocadas atrás do vidro */
+  body::before {
+    background:
+      linear-gradient(128deg, transparent 0 70%, rgba(61,255,143,.9) 73%, rgba(61,255,143,.0) 77%, transparent 100%),
+      linear-gradient(128deg, transparent 0 12%, rgba(61,255,143,.7) 15%, rgba(61,255,143,0) 19%, transparent 100%),
+      radial-gradient(900px 600px at 50% 40%, rgba(20, 90, 50, .35), transparent 70%);
+    filter: blur(42px); opacity: .8; transform: scale(1.1);
+  }
+  body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(1200px 800px at 50% 50%, transparent 40%, rgba(0,0,0,.55) 100%); }
+
+  /* placas = vidro */
+  .p { clip-path: none; border-radius: 20px; background: linear-gradient(160deg, var(--vidro2), var(--vidro));
+       border: 1px solid var(--borda-vidro); backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%);
+       box-shadow: 0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05); }
+  .p::before { display: none; }
+  .ptit h2 { text-transform: none; letter-spacing: .2px; font: 600 15px var(--corpo); color: var(--texto); }
+  .ptit h2 em { display: none; }
+
+  /* itens, ícones, botões: tudo redondo e suave */
+  .item, .tc, .num, .fluxo, .caixa, .dia { border-radius: 14px; background: rgba(255,255,255,.025); border-color: var(--linha); }
+  .tc.rodando { border-color: rgba(240,199,94,.55); box-shadow: 0 0 18px rgba(240,199,94,.12); }
+  .ico { clip-path: none; border-radius: 50%; border-width: 1.5px; background: rgba(61,255,143,.08); box-shadow: inset 0 0 10px rgba(61,255,143,.12); }
+  .bt { border-radius: 999px; padding: 6px 14px; border-color: var(--linha2); }
+  .bt.forte { box-shadow: 0 0 16px rgba(61,255,143,.35); }
+  .campo { border-radius: 12px; background: rgba(0,0,0,.35); border-color: var(--linha2); }
+  .chip { border-radius: 999px; background: rgba(255,255,255,.03); }
+
+  /* topo */
+  .marca, .topo { padding-block: 14px; }
+  .marca b { font: 800 24px var(--display); color: var(--verde); letter-spacing: 3px; text-shadow: 0 0 18px rgba(61,255,143,.35); }
+  .marca span { color: var(--suave); letter-spacing: 2px; }
+  .status { border-radius: 999px; background: rgba(0,0,0,.35); border-color: var(--linha2); }
+
+  /* menu: item ativo = pílula verde brilhante; avisos em vermelho */
+  .nav { gap: 4px; padding: 12px 10px; }
+  .nav a { border-radius: 14px; padding: 10px 12px; color: #d4eadb; }
+  .nav a:hover { background: rgba(61,255,143,.07); }
+  .nav a.on { background: var(--verde); color: #03140a; border-color: var(--verde); box-shadow: var(--brilho-verde); }
+  .nav a.on i { color: #03140a; }
+  .nav a em { background: #ff4d5e; color: #fff; border-radius: 7px; padding: 1px 7px; box-shadow: 0 0 12px rgba(255,77,94,.65); }
+
+  /* voz: microfone redondo e luminoso */
+  .mic { clip-path: none; border-radius: 50%; width: 86px; height: 86px; background: var(--cor-estado);
+         box-shadow: 0 0 26px var(--cor-estado), 0 0 0 8px rgba(61,255,143,.06); }
+  .mic::before { clip-path: none; border-radius: 50%; inset: 3px; background: radial-gradient(circle at 50% 35%, #133a22, #030805); }
+
+  /* emblema e rodapé */
+  .emblema-p { min-height: 380px; }
+  .tokens-emb { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 1; padding: 3px 12px; white-space: nowrap; cursor: default;
+                font: 600 11.5px var(--corpo); letter-spacing: 1px; text-transform: uppercase; color: var(--nevoa); border: 1px solid var(--linha2); border-radius: 999px; background: rgba(0,0,0,.35); }
+  .tokens-emb b { font: 700 13px var(--mono); margin-left: 4px; }
+
+  /* gaveta e janelas */
+  .gaveta { background: rgba(6, 16, 10, .82); backdrop-filter: blur(26px); -webkit-backdrop-filter: blur(26px); border-left: 1px solid var(--linha2); }
+  .modal > div { border-radius: 20px; background: rgba(8, 20, 13, .9); backdrop-filter: blur(20px); }
+  .veu { background: rgba(0,0,0,.5); backdrop-filter: blur(3px); }
+  .balao { border-radius: 18px; } .balao.ele { background: rgba(255,255,255,.04); border-color: var(--linha2); }
+  .balao.eu { background: linear-gradient(135deg, #1fb862, #12904c); box-shadow: 0 6px 20px rgba(31,184,98,.25); }
+  .cab-pag h1 { font: 700 28px var(--corpo); letter-spacing: -.2px; }
+  .cab-pag h1 em { font: 600 12px var(--display); letter-spacing: 2.5px; }
+  #aviso { border-radius: 14px; background: rgba(8,20,13,.92); backdrop-filter: blur(16px); }
+  .gaveta-rodape { padding: 12px 20px 16px; border-top: 1px solid var(--linha); background: rgba(6,16,10,.9); } .gaveta-rodape .faixa { margin: 0; }
+  .vz { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border: 1px solid var(--linha); border-radius: 14px; background: rgba(255,255,255,.025); flex-wrap: wrap; }
+  .vz.em-uso { border-color: var(--verde); background: rgba(61,255,143,.07); } .vz-tx { flex: 1 1 220px; min-width: 0; } .vz-tx b { display: block; font-weight: 600; } .vz-tx span:not(.chip) { font-size: 13px; color: var(--suave); }
+  .mic { cursor: pointer; }
+
+  /* faixa de estado e passos legíveis */
+  .faixa { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; border: 1px solid; margin-bottom: 18px; }
+  .faixa .tx { flex: 1; min-width: 0; } .faixa .tx b { display: block; font: 600 16px var(--corpo); overflow-wrap: anywhere; } .faixa .tx span { font-size: 13px; color: var(--suave); }
+  .faixa.trab { border-color: rgba(240,199,94,.55); background: rgba(240,199,94,.08); }
+  .faixa.ok { border-color: rgba(61,255,143,.5); background: rgba(61,255,143,.08); }
+  .faixa.erro { border-color: rgba(255,97,112,.55); background: rgba(255,97,112,.08); }
+  .faixa .spin { width: 24px; height: 24px; border-width: 3px; border-color: rgba(240,199,94,.25); border-top-color: var(--ouro); flex: none; }
+  .faixa .sinal { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; flex: none; color: #04140a; background: var(--verde); }
+  .faixa.erro .sinal { background: var(--sangue); }
+  .faixa .cron { text-align: right; flex: none; } .faixa .cron b { display: block; font: 700 20px var(--mono); color: var(--ouro); } .faixa .cron span { font-size: 12px; color: var(--suave); }
+  .dobra { margin-bottom: 14px; } .dobra > summary { cursor: pointer; font-weight: 600; color: var(--suave); padding: 6px 0; } .dobra > summary:hover { color: var(--verde); } .dobra[open] > summary { margin-bottom: 8px; }
+  .passo.feito::before { background: var(--verde3); } .passo.feito .tit { font-weight: 500; color: var(--suave); }
+  .det-in { color: var(--nevoa); font-size: 13px; overflow-wrap: anywhere; }
+  .passo.agora { color: var(--ouro); font-weight: 600; padding-left: 16px; } .passo.agora::before { display: none; } .passo.agora .spin { width: 12px; height: 12px; border-top-color: var(--ouro); margin-right: 4px; } .passo.agora .tit { color: var(--ouro); } .passo.agora .det-in { color: var(--ouro); opacity: .8; }
+  .passo.bloq::before { background: var(--ouro); } .passo.bloq .tit { color: var(--ouro); font-weight: 500; }
+  .passo.texto { font-style: normal; background: rgba(255,255,255,.03); border-radius: 10px; padding: 8px 12px; margin: 6px 0 6px 12px; color: var(--texto); } .passo.texto::before { left: -16px; top: 16px; }
+  .tc .ult b { color: var(--ouro); font-weight: 600; }
+
+  /* tela de tarefas: cabe na janela, quem rola é cada coluna */
+  .tt-tela { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); height: calc(100vh - 236px); min-height: 440px; }
+  .tt-col { display: flex; flex-direction: column; min-height: 0; }
+  .tt-col > .ptit { flex: none; }
+  .tt-rola { flex: 1; min-height: 0; overflow-y: auto; margin-top: 10px; padding-right: 4px; }
+  .tt-filtros { display: flex; flex-direction: column; gap: 8px; flex: none; }
+  .tt-busca { padding: 7px 12px; font-size: 13.5px; }
+  .cal-tela { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); height: calc(100vh - 236px); min-height: 440px; }
+  .cal-tela > .tt-col:first-child { overflow-y: auto; } .cal-tela .dia { min-height: 72px; }
+  .cal-tela .tt-rola { margin-top: 0; }
+  .fi .ico svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .check .x-apagar { margin-left: auto; flex: none; border: none; background: none; color: var(--nevoa); padding: 0 6px; font-size: 13px; line-height: 22px; border-radius: 6px; }
+  .check .x-apagar:hover { color: var(--sangue); background: rgba(255,97,112,.1); }
+  .tt-cab-feitas { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; }
+  .tt-cab-feitas .secao-t { margin: 0; color: var(--nevoa); }
+  .tt-n { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto auto auto; align-items: center; gap: 10px; padding: 6px 8px; border-bottom: 1px solid var(--linha); min-height: 38px; }
+  .tt-n:hover, .tt-n:focus-within { background: rgba(61,255,143,.05); }
+  .tt-n b { font-weight: 500; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tt-n .quem { font-size: 12.5px; color: var(--nevoa); white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .tt-n .prazo { color: var(--orvalho); font-weight: 500; }
+  .tt-n .bt { opacity: 0; } .tt-n:hover .bt, .tt-n:focus-within .bt { opacity: 1; }
+  @media (max-width: 1100px) { .tt-tela, .cal-tela { grid-template-columns: minmax(0, 1fr); height: auto; } .tt-col { height: 520px; } }
+
+  /* =====================================================================
+     REFINO ESTOICO-CYBERPUNK — respiro, camadas de vidro, tipografia exata e mármore
+     ===================================================================== */
+  :root {
+    --vao: 18px; --pad-y: 20px; --pad-x: 22px; --raio: 18px;
+    --borda-sutil: rgba(178, 255, 214, .085); --borda-acesa: rgba(61, 255, 143, .26);
+    --sombra-1: inset 0 1px 0 rgba(255,255,255,.045), 0 1px 2px rgba(0,0,0,.45), 0 18px 44px -20px rgba(0,0,0,.8);
+    --sombra-2: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 6px rgba(0,0,0,.5), 0 30px 70px -26px rgba(0,0,0,.9), 0 0 70px -30px rgba(61,255,143,.32);
+    --anim: .16s cubic-bezier(.2,.7,.3,1);
+  }
+  body::before { opacity: .36; }
+  .app { grid-template-columns: 264px minmax(0, 1fr); gap: var(--vao); padding: 18px 20px 22px; }
+  .lado, #pagina, .dash, .grade { gap: var(--vao); }
+
+  /* a estátua no vazio abaixo dos cartões do Núcleo, no tamanho exato desse espaço */
+  #marmore { display: none; position: fixed; right: 26px; bottom: 0; height: calc(100vh - 570px); aspect-ratio: 1; z-index: 0; pointer-events: none;
+    background: url(/img/marmore.jpg) center / cover no-repeat; mix-blend-mode: screen; opacity: .72;
+    -webkit-mask-image: linear-gradient(90deg, transparent 2%, #000 26%), linear-gradient(0deg, transparent 2%, #000 26%); -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 2%, #000 26%), linear-gradient(0deg, transparent 2%, #000 26%); mask-composite: intersect; }
+  body[data-pag="nucleo"] #marmore { display: block; }
+
+  /* placas: borda quase invisível, fio de luz no topo, sombra em camadas */
+  .p { padding: var(--pad-y) var(--pad-x); border-radius: var(--raio); border-color: var(--borda-sutil);
+       background: linear-gradient(165deg, rgba(15,36,25,.66), rgba(6,15,10,.78));
+       backdrop-filter: blur(20px) saturate(135%); -webkit-backdrop-filter: blur(20px) saturate(135%); box-shadow: var(--sombra-1); }
+  .p::before { display: block; top: 0; left: 24px; right: 24px; width: auto; height: 1px; box-shadow: none;
+       background: linear-gradient(90deg, transparent, rgba(61,255,143,.38) 28%, rgba(178,255,214,.16) 72%, transparent); }
+  .marca, .topo { padding: 14px var(--pad-x); }
+  .nav { padding: 12px 10px; }
+  .voz { padding-bottom: 20px; }
+
+  /* títulos: todos na mesma altura, com o rótulo latino de volta */
+  .ptit { margin-bottom: 16px; min-height: 28px; }
+  .ptit h2 { align-items: baseline; gap: 9px; }
+  .ptit h2 em { display: inline; font: 600 10.5px var(--display); letter-spacing: 2.2px; color: var(--nevoa); opacity: .8; white-space: nowrap; }
+  .chip { line-height: 1.35; padding: 2px 10px; }
+
+  /* números: colunas exatas, sem ligaduras */
+  .relogio b, .num b, .anel .tx b, .ti .h, .faixa .cron b, .tokens-emb b, .clima-topo b, .mono, .nav a em, .dia .n { font-variant-numeric: tabular-nums; font-variant-ligatures: none; }
+  .num b { letter-spacing: -.01em; line-height: 1.2; } .ti .h { letter-spacing: .02em; }
+
+  /* topo: o relógio entre dois fios, pílulas da mesma altura */
+  .relogio { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .relogio b { position: relative; font: 700 33px/1.1 var(--mono); letter-spacing: .08em; margin-right: -.08em;
+    text-shadow: 0 0 1px rgba(178,255,214,.6), 0 0 14px rgba(61,255,143,.45), 0 0 44px rgba(61,255,143,.18); }
+  .relogio b::before, .relogio b::after { content: ""; position: absolute; top: 52%; width: 84px; height: 1px; background: linear-gradient(90deg, transparent, rgba(61,255,143,.42)); }
+  .relogio b::before { right: calc(100% + 20px); } .relogio b::after { left: calc(100% + 20px); transform: scaleX(-1); }
+  .relogio div { font-size: 12.5px; letter-spacing: .02em; } .relogio div span { letter-spacing: 2px; }
+  .status, .clima-topo { height: 38px; padding: 0 16px; border-color: var(--borda-sutil); background: rgba(0,0,0,.32); box-shadow: inset 0 1px 0 rgba(255,255,255,.03); }
+
+  /* menu */
+  .nav a { font-size: 14px; gap: 8px; transition: background var(--anim), color var(--anim), transform var(--anim), box-shadow var(--anim); }
+  .nav a i { width: 28px; flex: none; text-align: center; }
+  .nav a:hover { color: var(--texto); background: rgba(61,255,143,.08); transform: translateX(2px); }
+  .nav a.on, .nav a.on:hover { background: var(--verde); color: #03140a; transform: none; box-shadow: 0 0 20px -3px rgba(61,255,143,.55), inset 0 1px 0 rgba(255,255,255,.35); }
+
+  /* botões, campos e linhas */
+  .bt { transition: color var(--anim), background var(--anim), border-color var(--anim), box-shadow var(--anim), transform var(--anim); }
+  a.bt { text-decoration: none; }
+  .bt:hover { color: var(--orvalho); border-color: rgba(61,255,143,.55); background: rgba(61,255,143,.08); box-shadow: 0 0 0 1px rgba(61,255,143,.1), 0 8px 18px -10px rgba(61,255,143,.55); transform: translateY(-1px); }
+  .bt:active { transform: translateY(0) scale(.98); box-shadow: none; }
+  .bt.forte:hover { color: #04140a; background: var(--orvalho); border-color: var(--orvalho); box-shadow: 0 0 22px -2px rgba(61,255,143,.6); }
+  .bt.perigo:hover { color: #1a0306; background: var(--sangue); border-color: var(--sangue); box-shadow: 0 8px 18px -10px rgba(255,97,112,.7); }
+  .campo { transition: border-color var(--anim), box-shadow var(--anim); } .campo:hover { border-color: rgba(61,255,143,.4); }
+  .item, .tc, .num, .fluxo, .caixa, .dia { border-color: var(--borda-sutil); background: rgba(255,255,255,.022); transition: border-color var(--anim), background var(--anim), box-shadow var(--anim), transform var(--anim); }
+  .item { padding: 10px 13px; } .lista { gap: 8px; }
+  a.item:hover, .tc:hover, .fluxo:hover, .dia:hover { border-color: var(--borda-acesa); background: rgba(61,255,143,.045); box-shadow: 0 12px 26px -20px rgba(61,255,143,.6); }
+  a.item:hover { transform: translateY(-1px); }
+  .fi, .tt-n, .check { border-bottom-color: var(--borda-sutil); } .fi { padding: 10px 2px; } .fi:last-child { border-bottom: none; }
+  .fi .ico { align-self: center; } .ti { transition: background var(--anim); } .check { transition: background var(--anim); } .check:hover { background: rgba(61,255,143,.04); }
+
+  /* núcleo estético: o relógio, a citação e a estátua lendo na direção deles */
+  .emblema-p { justify-content: space-between; align-items: stretch; gap: 6px; min-height: 620px; padding: 16px var(--pad-x) 24px; border-color: rgba(61,255,143,.16); box-shadow: var(--sombra-2); }
+  .emblema-p::after { content: ""; position: absolute; inset: 11px; z-index: 3; pointer-events: none; --c: rgba(61,255,143,.5);
+    background: linear-gradient(var(--c),var(--c)) left top/16px 1px no-repeat, linear-gradient(var(--c),var(--c)) left top/1px 16px no-repeat,
+      linear-gradient(var(--c),var(--c)) right top/16px 1px no-repeat, linear-gradient(var(--c),var(--c)) right top/1px 16px no-repeat,
+      linear-gradient(var(--c),var(--c)) left bottom/16px 1px no-repeat, linear-gradient(var(--c),var(--c)) left bottom/1px 16px no-repeat,
+      linear-gradient(var(--c),var(--c)) right bottom/16px 1px no-repeat, linear-gradient(var(--c),var(--c)) right bottom/1px 16px no-repeat; }
+  .hero-marmore { position: absolute; top: -8px; bottom: 8px; left: 50%; aspect-ratio: 1; transform: translateX(-42%); z-index: 0; pointer-events: none;
+    background: url(/img/marmore.jpg) center / cover no-repeat; mix-blend-mode: screen;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18%, #000 82%, transparent 100%), linear-gradient(0deg, transparent 18%, #000 42%); -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0, #000 18%, #000 82%, transparent 100%), linear-gradient(0deg, transparent 18%, #000 42%); mask-composite: intersect; }
+  .hero-marmore::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px); }
+  .hero-legenda { position: absolute; top: 28px; left: 20px; z-index: 2; writing-mode: vertical-rl; transform: rotate(180deg); font: 600 9.5px var(--display); letter-spacing: 4px; color: rgba(178,255,214,.4); pointer-events: none; }
+  .hero-dial { position: relative; z-index: 2; width: min(365px, 88%); align-self: center; margin: 140px 0 -28px; }
+  .hero-dial::before { content: ""; position: absolute; inset: 13%; border-radius: 50%; background: radial-gradient(closest-side, rgba(2,6,4,.9) 88%, transparent 100%); }
+  .tokens-emb { top: -140px; background: rgba(0,0,0,.55); border-color: var(--borda-acesa); }
+  .emblema { width: 100%; container-type: inline-size; }
+  .emblema svg { filter: drop-shadow(0 0 22px rgba(61,255,143,.16)); }
+  .emblema .nome b { font-size: clamp(16px, 8cqw, 40px); letter-spacing: .13em; margin-right: -.13em; }
+  .emblema .nome span { font-size: clamp(8px, 3.1cqw, 15px); letter-spacing: .19em; }
+  .emblema .nome i { font-size: clamp(8px, 3.2cqw, 15px); letter-spacing: .2em; }
+  /* os vizinhos do relógio acompanham a altura dele */
+  .dash > section:first-child { display: flex; flex-direction: column; }
+  #d-nucleo { flex: 1; } #d-nucleo .item { flex: 1; }
+  .feed { max-height: 580px; }
+  .citacao { position: relative; z-index: 2; width: min(640px, 100%); max-width: none; align-self: center; margin-top: 0; min-height: 0; }
+  .citacao::before { content: "◆"; display: block; width: 150px; margin: 0 auto 10px; font-size: 7px; line-height: 9px; color: var(--verde); text-align: center;
+    background: linear-gradient(90deg, transparent, rgba(61,255,143,.5)) left center/44% 1px no-repeat, linear-gradient(270deg, transparent, rgba(61,255,143,.5)) right center/44% 1px no-repeat; }
+  .citacao q { display: block; text-wrap: balance; font: 600 21px/1.35 var(--display); letter-spacing: .01em; color: #f2fbf5; text-shadow: 0 1px 14px rgba(0,0,0,.9), 0 0 26px rgba(61,255,143,.14); }
+  .citacao div { font: 600 11px var(--corpo); letter-spacing: 2.4px; color: var(--orvalho); opacity: .72; margin-top: 8px; }
+  .citacao.agora q { font: 500 17px/1.4 var(--corpo); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .mic-bloco { margin-top: 14px; padding-top: 2px; border-top: 1px solid var(--borda-sutil); }
+  .mic-bloco .campo { padding: 7px 12px; font-size: 13.5px; }
+  .mic-nivel { height: 5px; margin-top: 9px; border-radius: 99px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .mic-nivel i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--verde); box-shadow: 0 0 8px rgba(61,255,143,.7); transition: width .35s ease-out; }
+
+  /* conversas: dias à esquerda; à direita, cada pedido com a resposta logo abaixo */
+  .cv-tela { grid-template-columns: 280px minmax(0, 1fr); height: calc(100vh - 236px); min-height: 440px; }
+  #cv-filtro { padding: 7px 12px; font-size: 13.5px; flex: none; }
+  .cv-d { display: block; width: 100%; padding: 9px 11px; text-align: left; background: none; border: 1px solid transparent; border-radius: 12px; color: var(--suave); transition: background var(--anim), border-color var(--anim); }
+  .cv-d:hover { background: rgba(61,255,143,.05); }
+  .cv-d.sel { background: rgba(61,255,143,.1); border-color: var(--borda-acesa); color: var(--texto); }
+  .cv-d span { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 600; font-size: 14px; }
+  .cv-d span i { font: 500 12px var(--mono); font-style: normal; color: var(--nevoa); font-variant-numeric: tabular-nums; }
+  .cv-d small { display: block; margin-top: 2px; font-size: 12.5px; color: var(--nevoa); }
+  #cv-ctx { color: var(--nevoa); font-size: 12.5px; }
+  .cv-tela .chat { flex: 1; min-height: 0; max-height: none; gap: 12px; padding: 2px 6px 6px 0; }
+  .cv-turno { flex: none; padding: 14px 16px; border: 1px solid var(--borda-sutil); border-radius: 14px; background: rgba(255,255,255,.022); }
+  .cv-turno header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 11px; margin-bottom: 11px; border-bottom: 1px solid var(--borda-sutil); }
+  .cv-turno header b { font-weight: 600; font-size: 14.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .cv-meta { font-size: 12px; color: var(--nevoa); white-space: nowrap; } .cv-meta a { color: var(--verde2); text-decoration: none; } .cv-meta a:hover { color: var(--orvalho); text-decoration: underline; }
+  .cv-ele { display: flex; gap: 12px; }
+  .cv-selo { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--linha2); background: rgba(61,255,143,.07); font: 700 12px var(--display); color: var(--verde); }
+  .cv-ele > div { min-width: 0; flex: 1; } .cv-ele .cv-meta { display: block; margin-bottom: 2px; }
+  .cv-tx { max-width: 86ch; overflow-wrap: anywhere; color: var(--suave); } .cv-tx.md { line-height: 1.6; } .cv-tx > :first-child { margin-top: 0; } .cv-tx > :last-child { margin-bottom: 0; }
+  .cv-ele.erro .cv-tx { color: var(--sangue); }
+  .cv-tela .escrever { position: relative; flex: none; margin-top: 10px; }
+  .cv-tela .escrever textarea { field-sizing: content; height: auto; min-height: 48px; max-height: 170px; resize: none; padding: 12px 56px 12px 16px; border-radius: 14px; }
+  .cv-tela .escrever .bt { position: absolute; right: 7px; bottom: 7px; width: 34px; height: 34px; padding: 0; justify-content: center; }
+  @media (max-width: 1100px) { .cv-tela { grid-template-columns: minmax(0, 1fr); height: auto; } .cv-tela .tt-col:first-child { height: 240px; } }
+
+  @media (max-width: 1100px) { .relogio b::before, .relogio b::after { display: none; } }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: minmax(0, 1fr); } #marmore { display: none; }
+    .hero-dial { width: min(380px, 88%); }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body data-pag="centro">
+<div id="marmore" aria-hidden="true"></div>
+<div class="app">
+  <div class="p marca">
+    <svg class="selo" viewBox="0 0 44 44" style="filter:drop-shadow(0 0 8px rgba(61,255,143,.5))"><circle cx="22" cy="22" r="20" fill="none" stroke="#3dff8f" stroke-width="1.6"/>
+      <circle cx="22" cy="22" r="15" fill="#3dff8f" opacity=".13"/><text x="22" y="28.5" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="800" font-size="17" fill="#3dff8f">S</text></svg>
+    <div><b>SÊNECA</b><span>Centro de comando</span></div>
+  </div>
+
+  <div class="p topo">
+    <div class="status">Status <span class="v"><span class="dot" id="st-dot"></span><span id="st-txt">conectando</span></span></div>
+    <div class="relogio"><b id="hora">--:--:--</b><div id="data"></div></div>
+    <div class="clima-topo" id="t-clima" hidden><b id="t-temp"></b><span id="t-ceu"></span></div>
+  </div>
+
+  <aside class="lado">
+    <nav class="p nav" id="nav">
+      <a href="#/" data-pag="centro"><i>I</i>Centro de comando</a>
+      <a href="#/nucleo" data-pag="nucleo"><i>II</i>Núcleo de IA</a>
+      <a href="#/agentes" data-pag="agentes"><i>III</i>Agentes<span class="dot vivo c-ouro" id="nav-vivo" hidden title="O Claude está trabalhando agora" style="margin-left:auto"></span><em id="b-agentes"></em></a>
+      <a href="#/tarefas" data-pag="tarefas"><i>IV</i>Tarefas<em id="b-tarefas"></em></a>
+      <a href="#/calendario" data-pag="calendario"><i>V</i>Calendário</a>
+      <a href="#/memoria" data-pag="memoria"><i>VI</i>Memória</a>
+      <a href="#/conversas" data-pag="conversas"><i>VII</i>Conversas<em id="b-conversas"></em></a>
+      <a href="#/conhecimento" data-pag="conhecimento"><i>VIII</i>Base de conhecimento</a>
+      <a href="#/ferramentas" data-pag="ferramentas"><i>IX</i>Ferramentas e habilidades<em id="b-ferramentas"></em></a>
+      <a href="#/fluxos" data-pag="fluxos"><i>X</i>Fluxos</a>
+    </nav>
+    <div class="p voz">
+      <div class="ptit"><h2>Voz<em>vox</em></h2><div class="acoes"><small id="voz-chip"></small><button class="bt peq" data-a="abrir-vozes">Trocar voz</button></div></div>
+      <div class="onda" id="onda"></div>
+      <div class="mic" id="mic" data-a="abrir-vozes" title="Trocar a voz do Sêneca"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg></div>
+      <div class="legenda"><b id="voz-txt">—</b>segure o Ctrl direito para falar</div>
+      <form class="digitar" data-form="rapido"><input class="campo" name="texto" placeholder="ou escreva aqui…" autocomplete="off"><button class="bt forte peq" title="Enviar">➤</button></form>
+    </div>
+  </aside>
+
+  <main id="pagina"></main>
+</div>
+<div id="gaveta-raiz"></div>
+<div id="modal-raiz"></div>
+<div id="aviso" hidden></div>
+
+<script>
+const TOKEN = "__TOKEN__";
+const EST = {
+  iniciando: ["despertando", "Despertando", "#86a690", true], pronto: ["sereno", "Pronto", "#3dff8f", false],
+  gravando: ["ouvindo", "Ouvindo", "#ff6170", true], transcrevendo: ["entendendo", "Entendendo", "#f0c75e", true],
+  pensando: ["trabalhando", "Pensando", "#f0c75e", true], falando: ["falando", "Falando", "#b2ffd6", true],
+  erro: ["erro", "Erro, veja o log", "#ff6170", false], desligado: ["desligado", "Bandeja desligada", "#86a690", false],
+};
+const CITACOES = [
+  ["O tempo é o único bem que é verdadeiramente nosso.", "Cartas a Lucílio, I"],
+  ["Enquanto adiamos, a vida passa.", "Cartas a Lucílio, I"],
+  ["Não temos pouco tempo; é que perdemos muito.", "Sobre a brevidade da vida"],
+  ["Sofremos mais na imaginação do que na realidade.", "Cartas a Lucílio, XIII"],
+  ["Nenhum vento é favorável a quem não sabe aonde vai.", "Cartas a Lucílio, LXXI"],
+  ["Começa já a viver, e conta cada dia como uma vida.", "Cartas a Lucílio, CI"],
+  ["Enquanto ensinamos, aprendemos.", "Cartas a Lucílio, VII"],
+];
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const hm = (t) => t ? new Date(t * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+const dataHora = (t) => t ? new Date(t * 1000).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+const api = async (c) => (await fetch(c)).json();
+const post = async (c, corpo) => (await fetch(c, { method: "POST", headers: { "X-Painel": TOKEN, "Content-Type": "application/json" }, body: JSON.stringify(corpo || {}) })).json();
+function romano(n) { const t = [[1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"], [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]]; let s = ""; for (const [v, r] of t) while (n >= v) { s += r; n -= v; } return s; }
+
+/* ================= estado global ================= */
+const G = { estado: "iniciando", e: {}, hist: [], tarefas: [], detalhes: {}, sis: null, pag: "centro", params: {}, cache: {}, gaveta: null, iCit: Math.floor(Math.random() * 7), extra: {} };
+api("/api/nucleo").then((n) => { G.extra.nucleo = n; }).catch(() => {});   // raiz do projeto e config do Notion, usados em algumas telas
+const desenha = (id, html) => { const el = $(id); if (el && G.cache[id] !== html) { G.cache[id] = html; el.innerHTML = html; } };
+
+/* ================= utilidades de interface ================= */
+let avisoT;
+function aviso(txt, erro) { const a = $("aviso"); a.textContent = txt; a.className = erro ? "erro" : ""; a.hidden = false; clearTimeout(avisoT); avisoT = setTimeout(() => (a.hidden = true), 4200); }
+function confirmar(titulo, texto, botao = "Confirmar", perigo = false) {
+  return new Promise((ok) => {
+    $("modal-raiz").innerHTML = `<div class="modal"><div><h4>${esc(titulo)}</h4><p>${esc(texto)}</p>
+      <div class="acoes"><button class="bt" id="m-nao">Cancelar</button><button class="bt ${perigo ? "perigo" : "forte"}" id="m-sim">${esc(botao)}</button></div></div></div>`;
+    const fim = (v) => { $("modal-raiz").innerHTML = ""; ok(v); };
+    $("m-nao").onclick = () => fim(false); $("m-sim").onclick = () => fim(true); $("m-sim").focus();
+  });
+}
+function resultado(r, okTxt) {
+  const v = r?.resultado ?? r?.erro ?? "sem resposta";
+  if (v === "ok" || /^Tarefa criada:/.test(v) || v === "reiniciando") { aviso(okTxt || "Feito."); return true; }
+  aviso(String(v), true); return false;
+}
+function md(texto) {
+  const inl = (s) => s.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*]+)\*/g, "$1<i>$2</i>")
+    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, a, b) => `<span class="wl">${b || a}</span>`).replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, "$1");
+  let h = "", l = null; const f = () => { if (l) { h += `</${l}>`; l = null; } };
+  let corpo = texto.replace(/^---\n[\s\S]*?\n---\n/, "");
+  for (const x of esc(corpo).split(/\r?\n/)) { let m;
+    if ((m = x.match(/^#{1,2}\s+(.*)/))) { f(); h += `<h3>${inl(m[1])}</h3>`; }
+    else if ((m = x.match(/^#{3,6}\s+(.*)/))) { f(); h += `<h4>${inl(m[1])}</h4>`; }
+    else if (/^\s*(---|\*\*\*)\s*$/.test(x)) { f(); h += "<hr>"; }
+    else if ((m = x.match(/^\s*[-*]\s+\[( |x|X)\]\s+(.*)/))) { if (l !== "ul") { f(); h += "<ul>"; l = "ul"; } h += `<li><input type="checkbox" disabled ${m[1] !== " " ? "checked" : ""}> ${inl(m[2])}</li>`; }
+    else if ((m = x.match(/^\s*[-*]\s+(.*)/))) { if (l !== "ul") { f(); h += "<ul>"; l = "ul"; } h += `<li>${inl(m[1])}</li>`; }
+    else if ((m = x.match(/^\s*\d+\.\s+(.*)/))) { if (l !== "ol") { f(); h += "<ol>"; l = "ol"; } h += `<li>${inl(m[1])}</li>`; }
+    else if (!x.trim()) f(); else { f(); h += `<p>${inl(x)}</p>`; } }
+  f(); return h;
+}
+function corPasso(p) { if (p.ok === false) return "c-sangue"; if (/Criando uma tarefa/.test(p.titulo || "") || /Edit|Write/.test(p.nome || "")) return "c-ouro"; if (/notion/i.test(p.nome || "")) return "c-orvalho"; return "c-verde"; }
+/* passos em português claro: o que já foi feito no passado, o que está acontecendo em destaque */
+const PASSADO = [[/^Lendo/, "Leu"], [/^Escrevendo/, "Escreveu"], [/^Editando/, "Editou"], [/^Procurando/, "Procurou"], [/^Pesquisando/, "Pesquisou"],
+  [/^Abrindo/, "Abriu"], [/^Buscando/, "Buscou"], [/^Consultando/, "Consultou"], [/^Rodando/, "Rodou"], [/^Chamando/, "Chamou"], [/^Criando/, "Criou"], [/^Conferindo/, "Conferiu"], [/^Usando/, "Usou"]];
+const noPassado = (t) => { for (const [r, s] of PASSADO) if (r.test(t || "")) return t.replace(r, s); return t || ""; };
+const precisouAprovar = (p) => p.ok === false && /requires approval|haven't granted|has been denied|requires your approval|permission/i.test(p.saida || "");
+const fmtTempo = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), h = Math.floor(m / 60); return h ? `${h}h ${String(m % 60).padStart(2, "0")}min` : `${m}:${String(s % 60).padStart(2, "0")}`; };
+function fraseAgora(a) {
+  if (!a) return "";
+  if (a.tipo === "comecando") return "Iniciando o Claude…";
+  if (a.tipo === "pensando") return "Pensando no próximo passo…";
+  return `${a.titulo}${a.detalhe ? ": " + a.detalhe : ""}…`;
+}
+function agruparPassos(passos) {
+  const saida = [];
+  for (const p of passos) {
+    if (p.tipo === "ferramenta" && /TodoWrite|ToolSearch/.test(p.nome || "") && p.ok !== undefined) continue;
+    const ant = saida[saida.length - 1];
+    if (p.tipo === "ferramenta" && p.ok === true && !p.delegada && ant?.tipo === "ferramenta" && ant.ok === true && !ant.delegada && ant.titulo === p.titulo) {
+      if (p.detalhe && !ant.detalhes.includes(p.detalhe)) ant.detalhes.push(p.detalhe);
+      ant.vezes++;
+    } else saida.push(p.tipo === "ferramenta" ? { ...p, detalhes: p.detalhe ? [p.detalhe] : [], vezes: 1 } : p);
+  }
+  return saida;
+}
+function passosHtml(passos, vivo, rodape) {
+  if (!passos?.length) return vivo ? `<ul class="passos"><li class="passo agora"><span class="spin"></span> Iniciando…</li></ul>` : `<div class="vazio">Sem passos registrados.</div>`;
+  const lista = agruparPassos(passos);
+  const linhas = lista.map((p) => {
+    if (p.tipo === "texto") return `<li class="passo texto">${esc(p.texto)}</li>`;
+    if (p.tipo === "info" || p.tipo === "aviso") return `<li class="passo ${p.tipo}">${esc(p.texto)}</li>`;
+    const ver = p.delegada ? ` <button class="bt peq" data-a="ver-tarefa" data-n="${esc(p.delegada)}">ver tarefa</button>` : "";
+    if (p.ok === undefined) return vivo ? `<li class="passo agora"><span class="spin"></span> <span class="tit">${esc(p.titulo)}</span>${p.detalhes.length ? ` <span class="det-in">${esc(p.detalhes.join(", "))}</span>` : ""}…</li>` : `<li class="passo feito"><span class="tit">${esc(p.titulo)}</span></li>`;
+    if (precisouAprovar(p)) return `<li class="passo bloq"><span class="tit">Precisava da sua aprovação e seguiu sem isso</span>${p.detalhes.length ? `<div class="det">${esc(p.detalhes.join(", "))}</div>` : ""}</li>`;
+    if (p.ok === false) return `<li class="passo falhou"><span class="tit">${esc(noPassado(p.titulo))}, sem sucesso</span>${p.detalhes.length ? `<div class="det">${esc(p.detalhes.join(", "))}</div>` : ""}${p.saida ? `<div class="said">${esc(p.saida)}</div>` : ""}</li>`;
+    return `<li class="passo feito"><span class="tit">${esc(noPassado(p.titulo))}</span>${p.vezes > 1 && !p.detalhes.length ? ` <span class="det-in">${p.vezes}×</span>` : ""}${p.detalhes.length ? ` <span class="det-in">${esc(p.detalhes.join(", "))}</span>` : ""}${ver}</li>`;
+  });
+  if (vivo && !rodape && !lista.some((p) => p.tipo === "ferramenta" && p.ok === undefined)) linhas.push(`<li class="passo agora"><span class="spin"></span> Pensando no próximo passo…</li>`);
+  return `<ul class="passos">${linhas.join("")}</ul>`;
+}
+/* faixa no topo: dá para saber de relance se está trabalhando, pronto ou com problema */
+function faixaTarefa(d) {
+  if (d.rodando) return `<div class="faixa trab"><span class="spin"></span><div class="tx"><b>${esc(fraseAgora(d.agora) || "Trabalhando…")}</b><span id="g-ocioso" data-ult="${d.ult_t || 0}">o Claude está trabalhando</span></div>
+    <div class="cron"><b id="g-cron" data-ini="${d.inicio_t || 0}">${fmtTempo(Date.now() / 1000 - (d.inicio_t || 0))}</b><span>${d.n_passos || 0} passos</span></div></div>`;
+  const dur = d.final?.segundos ? `em ${fmtTempo(d.final.segundos)}` : "";
+  if (/^conclu/.test(d.status)) return `<div class="faixa ok"><span class="sinal">✓</span><div class="tx"><b>Concluída</b><span>${dur}${d.n_passos ? ` · ${d.n_passos} passos` : ""}</span></div></div>`;
+  if (/parada/.test(d.status)) return `<div class="faixa erro"><span class="sinal">■</span><div class="tx"><b>Parada por você</b><span>${esc(d.status)}</span></div></div>`;
+  return `<div class="faixa erro"><span class="sinal">!</span><div class="tx"><b>${/interrompida/.test(d.status) ? "Interrompida" : "Não terminou bem"}</b><span>veja o resultado abaixo</span></div></div>`;
+}
+setInterval(() => {
+  const c = $("g-cron"); if (c) c.textContent = fmtTempo(Date.now() / 1000 - +c.dataset.ini);
+  const o = $("g-ocioso"); if (o) { const s = Date.now() / 1000 - +o.dataset.ult; o.textContent = s > 60 ? `sem novidades há ${fmtTempo(s)}; passos longos demoram mesmo` : "o Claude está trabalhando"; }
+}, 1000);
+function chipTarefa(d) {
+  if (d.rodando) return `<span class="chip c-ouro"><span class="dot vivo"></span>trabalhando</span>`;
+  if (/^conclu/.test(d.status)) return `<span class="chip c-verde">concluída</span>`;
+  if (/parada/.test(d.status)) return `<span class="chip c-sangue">parada</span>`;
+  if (/falhou|interrompida/.test(d.status)) return `<span class="chip c-sangue">${esc(d.status.split(" ")[0])}</span>`;
+  return `<span class="chip c-nevoa">${esc(d.status)}</span>`;
+}
+function cartaoTarefa(d) {
+  const det = G.detalhes[d.nome], minutos = Math.floor((Date.now() / 1000 - (d.inicio_t || 0)) / 60);
+  return `<div class="tc ${d.rodando ? "rodando" : ""}">
+    <div class="cab"><span class="ico ${d.rodando ? "c-ouro" : /^conclu/.test(d.status) ? "c-verde" : "c-sangue"}">CL</span>
+      <div><b class="corta" title="${esc(d.titulo)}">${esc(d.titulo)}</b><span>${esc(d.inicio)} · ${esc((d.pasta || "").split("\\").pop())}</span></div>${chipTarefa(d)}</div>
+    <div class="ult">${d.rodando ? `<b>Agora:</b> ${esc(fraseAgora(det?.agora) || "Trabalhando…")}${minutos ? ` <span class="c-nevoa">· há ${minutos} min</span>` : ""}` : esc(d.pedido.slice(0, 200))}</div>
+    ${d.rodando ? `<div class="barra"><i></i></div>` : ""}
+    <div class="acoes">${d.sessao ? `<button class="bt forte peq" data-a="abrir-claude" data-n="${esc(d.nome)}">↗ ${d.rodando ? "Ver ao vivo no Claude" : "Abrir no Claude"}</button>` : ""}
+      <button class="bt peq" data-a="ver-tarefa" data-n="${esc(d.nome)}">Passo a passo</button>
+      ${d.rodando ? `<button class="bt perigo peq" data-a="parar" data-n="${esc(d.nome)}">■ Parar</button>` : `<button class="bt perigo peq" data-a="apagar" data-n="${esc(d.nome)}" title="Mandar para a Lixeira">🗑 Apagar</button>`}</div>
+  </div>`;
+}
+const cabecalho = (latim, titulo, texto, direita = "") => `<div class="cab-pag"><div><h1><em>${latim}</em>${titulo}</h1>${texto ? `<p>${texto}</p>` : ""}</div><div class="acoes">${direita}</div></div>`;
+
+/* ================= relógio, emblema ================= */
+function montarEmblema() {
+  const C = 200; let louro = "";
+  for (const lado of [-1, 1]) for (let i = 0; i < 15; i++) {
+    const graus = lado < 0 ? 108 + i * 10 : 72 - i * 10, ang = graus * Math.PI / 180, x = C + Math.cos(ang) * 160, y = C + Math.sin(ang) * 160;
+    const tang = lado < 0 ? graus + 180 : graus, tam = 13 - i * 0.35;
+    for (const off of [-1, 1]) louro += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(tam * .42).toFixed(1)}" ry="${tam.toFixed(1)}" fill="#22d672" fill-opacity="${(.6 - i * .016).toFixed(2)}" transform="rotate(${(tang + off * 38).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}) translate(0 ${(-tam * .8).toFixed(1)})"/>`;
+  }
+  louro += `<path d="M${C - 58} ${C + 150} Q ${C} ${C + 176} ${C + 58} ${C + 150}" fill="none" stroke="#22d672" stroke-opacity=".5" stroke-width="2"/><circle cx="${C}" cy="${C + 163}" r="4" fill="#3dff8f"/>`;
+  let m = "";
+  for (let i = 0; i < 60; i++) {
+    const a = (i * 6 - 90) * Math.PI / 180, longo = i % 5 === 0, r1 = longo ? 127 : 132;
+    m += `<line x1="${(C + Math.cos(a) * r1).toFixed(1)}" y1="${(C + Math.sin(a) * r1).toFixed(1)}" x2="${(C + Math.cos(a) * 138).toFixed(1)}" y2="${(C + Math.sin(a) * 138).toFixed(1)}" stroke="${longo ? "#3dff8f" : "#2b6144"}" stroke-width="${longo ? 2 : 1}"/>`;
+    if (longo) m += `<text x="${(C + Math.cos(a) * 114).toFixed(1)}" y="${(C + Math.sin(a) * 114 + 4.5).toFixed(1)}" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="700" font-size="12.5" fill="#b4cfbd">${romano(i / 5 || 12)}</text>`;
+  }
+  return `<svg viewBox="0 0 400 400" aria-hidden="true">
+    <defs><radialGradient id="gC" r="50%"><stop offset="0" stop-color="#3dff8f" stop-opacity=".15"/><stop offset="1" stop-color="#3dff8f" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="200" cy="200" r="150" fill="url(#gC)"/>${louro}<circle cx="200" cy="200" r="138" fill="none" stroke="#2b6144"/>${m}
+    <circle id="arco-min" cx="200" cy="200" r="123" fill="none" stroke="#3dff8f" stroke-width="2" stroke-linecap="round" transform="rotate(-90 200 200)"/>
+    <circle cx="200" cy="200" r="98" fill="#040705" stroke="#1c3826"/>
+    <g class="gira"><circle cx="200" cy="200" r="103" fill="none" stroke="#2b6144" stroke-dasharray="3 7"/><path d="M200 95 l5 9 h-10 z" fill="#3dff8f" opacity=".8"/></g>
+    <circle id="ponto-seg" r="5" fill="var(--cor-estado)" style="filter:drop-shadow(0 0 6px var(--cor-estado))"/></svg>
+    <div class="nome"><b>SÊNECA</b><span>CLAUDE CODE</span><i id="ano"></i></div>`;
+}
+$("onda").innerHTML = Array.from({ length: 28 }, (_, i) => `<i style="--h:${(8 + Math.abs(Math.sin(i * .62)) * 36).toFixed(0)}px;animation-delay:${(i * 0.05).toFixed(2)}s"></i>`).join("");
+function relogio() {
+  const d = new Date();
+  $("hora").textContent = d.toLocaleTimeString("pt-BR");
+  const dia = d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+  $("data").innerHTML = `${esc(dia.charAt(0).toUpperCase() + dia.slice(1))}<span>${romano(d.getDate())} · ${romano(d.getMonth() + 1)} · ${romano(d.getFullYear())}</span>`;
+  if ($("ano")) $("ano").textContent = `ANNO ${romano(d.getFullYear())}`;
+  const p = $("ponto-seg"); if (!p) return;
+  const s = d.getSeconds() + d.getMilliseconds() / 1000, a = (s * 6 - 90) * Math.PI / 180;
+  p.setAttribute("cx", (200 + Math.cos(a) * 138).toFixed(1)); p.setAttribute("cy", (200 + Math.sin(a) * 138).toFixed(1));
+  const c = 2 * Math.PI * 123; $("arco-min").setAttribute("stroke-dasharray", `${(c * (d.getMinutes() + s / 60) / 60).toFixed(1)} ${c.toFixed(1)}`);
+}
+setInterval(relogio, 250);
+function citacao() {
+  const el = $("citacao"); if (!el) return;
+  if (G.e.pedido_atual) { el.className = "citacao agora"; el.querySelector("q").textContent = G.e.pedido_atual; el.querySelector("div").textContent = EST[G.estado]?.[1] || ""; return; }
+  const [q, f] = CITACOES[G.iCit % CITACOES.length]; el.className = "citacao"; el.querySelector("q").textContent = q; el.querySelector("div").textContent = "Sêneca · " + f;
+}
+setInterval(() => { const el = $("citacao"); if (el && !G.e.pedido_atual) { el.style.opacity = 0; setTimeout(() => { G.iCit++; citacao(); el.style.opacity = 1; }, 600); } }, 18000);
+
+/* ================= dados globais (sempre) ================= */
+async function atualizarEstado() {
+  let e; try { e = await api("/api/estado"); } catch { e = { estado: "desligado" }; }
+  G.e = e; G.estado = e.estado;
+  if (e.versao) { if ((G.versao && e.versao !== G.versao) || G.semVersao) return location.reload(); G.versao = e.versao; } else if (e.estado !== "desligado") G.semVersao = true;
+  const [st, txt, cor, vivo] = EST[G.estado] || [G.estado, G.estado, "#86a690", false];
+  document.documentElement.style.setProperty("--cor-estado", cor);
+  const ativa = ["pensando", "transcrevendo", "gravando", "falando"].includes(G.estado);
+  document.body.classList.toggle("trabalhando", ativa);
+  $("st-txt").textContent = st; $("st-dot").classList.toggle("vivo", vivo);
+  $("voz-txt").textContent = txt.toUpperCase(); $("voz-chip").textContent = G.estado === "desligado" ? "offline" : "online";
+  $("onda").classList.toggle("ativa", ativa); $("mic").classList.toggle("ativa", ativa);
+  citacao();
+}
+/* ---------- avisos do menu: contam só o que é NOVO desde a última visita à seção */
+const VISTOS = {};
+function lerVistos(chave) {
+  if (VISTOS[chave]) return VISTOS[chave];
+  try { const v = localStorage.getItem("visto:" + chave); if (v !== null) return (VISTOS[chave] = new Set(JSON.parse(v))); } catch {}
+  return null;
+}
+function gravarVistos(chave, set) { VISTOS[chave] = set; try { localStorage.setItem("visto:" + chave, JSON.stringify([...set].slice(-2000))); } catch {} }
+function aviso_menu(chave, idEl, ids) {
+  let vistos = lerVistos(chave);
+  if (!vistos || G.pag === chave) {           // 1ª vez, ou você está nesta seção: tudo conta como visto
+    vistos = new Set([...(vistos || []), ...ids]); gravarVistos(chave, vistos);
+  }
+  const novos = ids.filter((i) => !vistos.has(i)).length;
+  $(idEl).textContent = novos || "";
+  $(idEl).title = novos ? `${novos} novidade${novos > 1 ? "s" : ""} desde a sua última visita` : "";
+}
+async function atualizarHistorico() {
+  try { G.hist = await api("/api/historico?n=200"); } catch { return; }
+  aviso_menu("conversas", "b-conversas", G.hist.filter((h) => h.status !== "pensando").map((h) => h.id));
+}
+async function atualizarTarefas() {
+  try { G.tarefas = await api("/api/delegadas"); } catch { return; }
+  for (const d of G.tarefas.filter((x) => x.rodando || (G.gaveta?.tipo === "tarefa" && G.gaveta.nome === x.nome)))
+    try { G.detalhes[d.nome] = await api("/api/delegada?nome=" + encodeURIComponent(d.nome)); } catch {}
+  // novidade = tarefa que começou ou terminou depois da sua última visita; rodando = pontinho piscando
+  aviso_menu("agentes", "b-agentes", G.tarefas.map((d) => d.nome + "|" + (d.rodando ? "rodando" : d.status)));
+  $("nav-vivo").hidden = !G.tarefas.some((d) => d.rodando);
+}
+async function atualizarSistema() { try { G.sis = await api("/api/sistema"); pintarClima(); } catch {} }
+function pintarClima() {
+  const c = G.sis?.clima || "", m = c.match(/^(.*?),\s*(-?\d+)\s*graus/);
+  $("t-clima").hidden = !c; $("t-clima").title = c;
+  $("t-temp").textContent = m ? `${m[2]}°` : ""; $("t-ceu").textContent = m ? m[1] : c;
+}
+/* ícones de traço, no mesmo desenho em todo o painel; o servidor manda só o nome */
+const ICONES = {
+  livro: '<path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>',
+  tomada: '<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/>',
+  terminal: '<path d="m4 17 6-6-6-6M12 19h8"/>',
+  enviar: '<path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/>',
+  lista: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  arquivo: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/>',
+  lapis: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  busca: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  globo: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/>',
+  chip: '<rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M19 9h3M19 15h3M2 9h3M2 15h3"/>',
+  chave: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>',
+  brilho: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>',
+};
+const icone = (n) => ICONES[n] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[n]}</svg>` : esc(n || "•");
+async function atualizarUso() { try { G.uso = await api("/api/uso"); } catch {} }
+async function contadores() {
+  try {
+    const t = await api("/api/tarefas-locais"), n = await api("/api/notion?tipo=tarefas");
+    const ids = (t.secoes || []).flatMap((s) => s.itens.filter((i) => !i.feito).map((i) => "o:" + i.texto))
+      .concat((n.dados?.tarefas || []).map((x) => "n:" + x.titulo + "|" + x.status));
+    aviso_menu("tarefas", "b-tarefas", ids);
+  } catch {}
+  try {
+    const f = await api("/api/ferramentas");
+    aviso_menu("ferramentas", "b-ferramentas", Object.values(f.grupos).flat().concat(f.habilidades.map((h) => "hab:" + h.nome)));
+  } catch {}
+}
+
+/* ================= páginas ================= */
+const PAGINAS = {};
+
+/* ---------- I. Centro de comando */
+PAGINAS.centro = {
+  montar() {
+    return `<div class="dash">
+      <section class="p"><div class="ptit"><h2>Núcleo<em>corpus</em></h2></div><div class="lista" id="d-nucleo"></div></section>
+      <section class="p emblema-p"><div class="hero-marmore" aria-hidden="true"></div><span class="hero-legenda" aria-hidden="true">L · ANNAEVS · SENECA</span>
+        <div class="hero-dial"><div class="tokens-emb" id="d-tokens-item" hidden>Tokens <b id="d-tokens">—</b></div><div class="emblema">${montarEmblema()}</div></div>
+        <div class="citacao" id="citacao"><q></q><div></div></div></section>
+      <section class="p"><div class="ptit"><h2>Ao vivo<em>nunc</em></h2><span class="chip c-verde"><span class="dot vivo"></span>ao vivo</span></div><div class="feed" id="d-feed"></div></section>
+      <section class="p largo"><div class="ptit"><h2>Tarefas do Claude<em>opera</em></h2><small id="d-claude-res"></small></div><div class="tarefas" id="d-tarefas"></div></section>
+      <section class="p"><div class="ptit"><h2>Linha do tempo<em>dies</em></h2><a class="small" href="#/conversas">ver todas</a></div><div class="tempo" id="d-tempo"></div></section>
+      <section class="p"><div class="ptit"><h2>Máquina<em>machina</em></h2></div><div class="aneis" id="d-aneis"></div></section>
+      <section class="p"><div class="ptit"><h2>Memória<em>memoria</em></h2></div><div class="numeros" id="d-numeros"></div></section>
+      <section class="p"><div class="ptit"><h2>Conexões<em>nexus</em></h2><small id="d-conex-res"></small></div><div class="lista" id="d-conex" style="display:grid;grid-template-columns:1fr 1fr;gap:7px"></div></section>
+    </div>`;
+  },
+  atualizar() {
+    const s = G.sis, on = G.estado !== "desligado";
+    // tokens restantes da assinatura (janela de 5h; se não vier, o indicador fica escondido)
+    const u5 = G.uso?.cinco_horas?.utilization, u7 = G.uso?.sete_dias?.utilization;
+    const itTok = $("d-tokens-item");
+    if (itTok) {
+      if (u5 == null) { itTok.hidden = true; }
+      else {
+        const restante = Math.max(0, Math.round(100 - u5));
+        itTok.hidden = false;
+        const corTok = restante < 15 ? "c-sangue" : restante < 35 ? "c-ouro" : "c-verde";
+        $("d-tokens").textContent = `${restante}%`; $("d-tokens").className = corTok;
+        itTok.title = `Restante na janela de 5h` + (u7 != null ? ` · ${Math.max(0, Math.round(100 - u7))}% restante em 7 dias` : "");
+      }
+    }
+    // feed
+    const itens = [], u = G.hist[0];
+    if (u) {
+      for (const p of u.passos || []) if (p.tipo === "ferramenta") itens.push({ t: p.t || u.inicio, ico: p.icone, cor: corPasso(p), tit: p.titulo, det: p.detalhe, tag: "Sêneca", tagc: "c-verde" });
+      itens.push({ t: u.inicio, ico: "◆", cor: "c-verde", tit: u.pedido, det: u.resposta || "pensando…", tag: u.status === "pensando" ? "agora" : "pedido", tagc: u.status === "pensando" ? "c-ouro" : "c-nevoa" });
+    }
+    for (const d of G.tarefas.filter((x) => x.rodando)) (G.detalhes[d.nome]?.passos || []).filter((p) => p.tipo === "ferramenta").slice(-6)
+      .forEach((p, i) => itens.push({ t: 1e12 + i, ico: p.icone, cor: corPasso(p), tit: p.titulo, det: p.detalhe || d.titulo, tag: "Claude", tagc: "c-ouro" }));
+    itens.sort((a, b) => b.t - a.t);
+    desenha("d-feed", itens.length ? itens.slice(0, 14).map((i) => `<div class="fi"><span class="ico ${i.cor}">${icone(i.ico)}</span><div><b class="corta">${esc(i.tit)}</b><span class="s corta">${esc(i.det || "")}</span></div><span class="chip ${i.tagc}">${i.tag}</span></div>`).join("") : `<div class="vazio">Aguardando o primeiro pedido…</div>`);
+    // tarefas
+    const rod = G.tarefas.filter((d) => d.rodando).length;
+    $("d-claude-res").textContent = rod ? `${rod} trabalhando agora` : `${G.tarefas.length} no total`;
+    desenha("d-tarefas", G.tarefas.length ? G.tarefas.slice(0, 6).map(cartaoTarefa).join("") + (G.tarefas.length > 6 ? `<a class="bt" href="#/agentes" style="align-self:center;justify-self:start">ver todas (${G.tarefas.length}) →</a>` : "")
+      : `<div class="vazio">Quando o Sêneca delegar algo ao Claude, aparece aqui e abre no app do Claude.</div>`);
+    // linha do tempo
+    desenha("d-tempo", G.hist.length ? G.hist.slice(0, 30).map(linhaTempo).join("") : `<div class="vazio">Nenhuma conversa ainda.</div>`);
+    if (!s) return;
+    const cor = (v) => v > 85 ? "#ff6170" : v > 65 ? "#f0c75e" : "#3dff8f";
+    desenha("d-aneis", anel("CPU", s.cpu, cor(s.cpu)) + anel("RAM", s.ram, cor(s.ram)) + anel("Disco", s.disco, cor(s.disco)));
+    desenha("d-numeros", [["pedidos hoje", s.pedidos_hoje], ["pedidos no total", s.pedidos_total], ["ferramentas hoje", s.ferramentas_hoje], ["notas na memória", s.notas]].map(([a, b]) => `<div class="num"><span>${a}</span><b>${b}</b></div>`).join(""));
+    desenha("d-nucleo", [
+      ["CL", "Claude, o cérebro", s.servidor ? "ativo" : "desligado", s.servidor ? "c-verde" : "c-sangue", "#/nucleo"],
+      ["ME", "Memória", `${s.notas} notas no Obsidian`, "c-orvalho", "#/memoria"],
+      ["VX", "Voz", on ? (EST[G.estado]?.[1] || G.estado).toLowerCase() : "offline", on ? "c-verde" : "c-sangue", "#/nucleo"],
+      ["OP", "Tarefas do Claude", s.delegadas_rodando ? `${s.delegadas_rodando} trabalhando` : `${s.delegadas_total} registradas`, s.delegadas_rodando ? "c-ouro" : "c-suave", "#/agentes"],
+      ["NO", "Notion", "só leitura", "c-orvalho", "#/tarefas"],
+      ["MQ", "Máquina", s.cpu > 85 || s.ram > 90 ? "carga alta" : "tranquila", s.cpu > 85 || s.ram > 90 ? "c-ouro" : "c-verde", "#/ferramentas"],
+    ].map(([i, t, v, c, h]) => `<a class="item" href="${h}" style="text-decoration:none;color:inherit"><span class="ico ${c}">${i}</span><div><b>${t}</b><span class="s ${c}">${esc(v)}</span></div></a>`).join(""));
+    const conex = [["Claude", s.servidor, "assinatura"], ["Memória", true, "Obsidian"], ["Notion", true, "leitura"], ["Voz neural", on, G.extra.nucleo?.voz_atual || "edge-tts"], ["Whisper", on, "transcrição"], ["WhatsApp", false, "desligado"]];
+    $("d-conex-res").textContent = `${conex.filter((c) => c[1]).length} de ${conex.length}`;
+    desenha("d-conex", conex.map(([n, ok, d]) => `<div class="item" style="padding:7px 9px"><span class="ico ${ok ? "c-verde" : "c-nevoa"}" style="width:26px;height:26px">${ok ? "●" : "○"}</span><div><b style="font-size:13.5px">${n}</b><span class="s ${ok ? "c-verde" : "c-nevoa"}">${d}</span></div></div>`).join(""));
+  },
+};
+function linhaTempo(h) {
+  const cor = h.status === "pensando" ? "c-ouro" : h.status === "erro" ? "c-sangue" : "c-verde";
+  const st = h.status === "pensando" ? `<span class="chip c-ouro">agora</span>` : h.status === "erro" ? `<span class="chip c-sangue">erro</span>` : `<span class="chip c-nevoa">${h.origem === "texto" ? "escrito" : h.origem === "voz" ? "voz" : "app"}</span>`;
+  return `<button class="ti" data-a="ver-conversa" data-n="${esc(h.id)}"><span class="h">${hm(h.inicio)}</span><span class="l ${cor}"></span>
+    <span class="t"><b class="corta">${esc(h.pedido || "(sem texto)")}</b><span class="corta">${esc(h.resposta || (h.status === "pensando" ? "pensando…" : ""))}</span></span>${st}</button>`;
+}
+function anel(rot, v, cor) {
+  const r = 37, c = 2 * Math.PI * r, f = Math.max(0, Math.min(100, v || 0));
+  return `<div class="anel"><svg viewBox="0 0 88 88"><circle cx="44" cy="44" r="${r}" fill="none" stroke="#1c3826" stroke-width="7"/><circle cx="44" cy="44" r="${r}" fill="none" stroke="${cor}" stroke-width="7" stroke-dasharray="${(c * f / 100).toFixed(1)} ${c.toFixed(1)}"/></svg><div class="tx"><span>${rot}</span><b style="color:${cor}">${Math.round(f)}%</b></div></div>`;
+}
+
+/* ---------- II. Núcleo de IA */
+PAGINAS.nucleo = {
+  async montar() {
+    const n = await api("/api/nucleo");
+    const mics = await api("/api/microfones").catch(() => ({}));
+    G.extra.nucleo = n;
+    const separador = 'style="margin-top:14px;padding-top:12px;border-top:1px solid var(--linha)"';
+    return cabecalho("Animus", "Núcleo de IA", "O essencial do Sêneca: a conversa, a voz e as regras.") +
+    `<div class="grade g3">
+      <section class="p"><div class="ptit"><h2>Cérebro<em>mens</em></h2><span id="n-serv"></span></div>
+        <p class="muted" style="margin:0 0 14px">Claude Code na sua assinatura. A conversa atual tem <b id="n-ctx">0</b> trocas e recomeça sozinha depois de 8 horas parada.</p>
+        <div class="acoes"><button class="bt forte" data-a="abrir-sessao">↗ Abrir no Claude</button><button class="bt" data-a="nova-conversa">✦ Nova conversa</button></div>
+        <div class="acoes" ${separador}><button class="bt peq" data-a="reiniciar" title="Reinicia só a ligação com o Claude">↻ Religar cérebro</button><button class="bt peq" data-a="atualizar-seneca" title="Reinicia o Sêneca inteiro com a versão mais nova">⟳ Atualizar o Sêneca</button></div></section>
+      <section class="p"><div class="ptit"><h2>Voz<em>vox</em></h2><button class="bt forte peq" data-a="abrir-vozes">Trocar voz</button></div>
+        <p class="muted" style="margin:0 0 14px">Falando como <b>${esc(n.voz_atual)}</b>. Para falar com ele, segure o ${esc(n.atalho === "ctrl_r" ? "Ctrl direito" : n.atalho)}.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label class="chave"><input type="checkbox" data-cfg="falar"><i></i>Responder em voz</label>
+          <label class="chave"><input type="checkbox" data-cfg="notificacoes"><i></i>Mostrar notificações</label>
+        </div>
+        <div class="mic-bloco"><label class="rot" for="n-mic">Microfone</label>
+          <select class="campo" id="n-mic"><option value="">Automático (padrão do Windows)</option>${(mics.lista || []).map((m) => `<option value="${esc(m)}">${esc(m)}${/headset|hands-free/i.test(m) ? " (piora o som do fone)" : ""}</option>`).join("")}</select>
+          <div class="mic-nivel" title="Mexe quando o microfone capta som"><i id="n-mic-nivel"></i></div>
+          <p class="small muted" style="margin:6px 0 0">Ouvindo agora: <b id="n-mic-atual">—</b></p></div></section>
+      <section class="p"><div class="ptit"><h2>Regras<em>leges</em></h2></div>
+        <p class="muted" style="margin:0 0 14px">Ele usa ${n.permitidas} ferramentas liberadas e também lê ${esc(n.pastas_extras.join(", "))}. O que é proibido fica em Ferramentas.</p>
+        <div class="acoes"><button class="bt" data-a="abrir-nota" data-c="doc:personalidade">Ver personalidade</button><a class="bt" href="#/ferramentas">Ver ferramentas</a></div></section>
+    </div>`;
+  },
+  atualizar() {
+    $("n-ctx") && ($("n-ctx").textContent = G.e.contexto ?? 0);
+    const mic = $("n-mic");
+    if (mic) {
+      if (document.activeElement !== mic) mic.value = G.e.mic_escolhido || "";
+      $("n-mic-atual").textContent = G.e.mic_atual || "nenhum";
+      $("n-mic-nivel").style.width = `${Math.round(Math.min(1, Math.sqrt(G.e.mic_nivel || 0)) * 100)}%`;
+    }
+    document.querySelectorAll("[data-cfg]").forEach((c) => { if (document.activeElement !== c) c.checked = !!G.e[c.dataset.cfg]; });
+    desenha("n-serv", G.sis ? (G.sis.servidor ? `<span class="chip c-verde"><span class="dot"></span>online</span>` : `<span class="chip c-sangue">offline</span>`) : "");
+  },
+};
+
+/* ---------- III. Agentes */
+PAGINAS.agentes = {
+  async montar() {
+    const a = await api("/api/agentes"); G.extra.agentes = a;
+    const opcoes = [{ rotulo: "Sêneca", caminho: G.extra.nucleo?.raiz || "" }, ...a.pastas];
+    G.extra.pastas = opcoes;
+    const sub = a.subagentes.map((s) => `<div class="fluxo"><div class="topo-f"><span class="ico c-orvalho">${s.nome.slice(0, 2).toUpperCase()}</span><div><b>${esc(s.nome)}</b><div class="small muted">subagente do Claude</div></div></div>
+      <div class="small muted">${esc(s.descricao)}</div><div class="small" style="color:var(--nevoa)">Ferramentas: ${esc(s.ferramentas)}</div>
+      <div class="acoes"><button class="bt peq" data-a="usar-sub" data-n="${esc(s.nome)}">Usar numa tarefa</button></div></div>`).join("");
+    return cabecalho("Agentes", "Agentes", "Você fala com o Sêneca, que é o Claude. Trabalhos longos viram tarefas, sessões dele em segundo plano, e os subagentes são especialistas que ele chama.") +
+    `<div class="grade g3">
+      <div class="fluxo"><div class="topo-f"><span class="ico c-verde">SÊ</span><div><b>Sêneca</b><div class="small muted">assistente de voz · bandeja</div></div><span id="ag-sen" style="margin-left:auto"></span></div>
+        <div class="small muted">Ouve pelo Ctrl direito, lê sua memória e o Notion, responde em voz e delega trabalhos longos.</div>
+        <div class="acoes"><a class="bt peq" href="#/conversas">Escrever para ele</a></div></div>
+      <div class="fluxo"><div class="topo-f"><span class="ico c-ouro">CL</span><div><b>Claude</b><div class="small muted">executor de tarefas · Claude Code</div></div><span id="ag-cl" style="margin-left:auto"></span></div>
+        <div class="small muted">Programa, revisa, pesquisa e escreve relatórios em segundo plano. Só faz commit e push quando você pede, e nunca apaga arquivos.</div>
+        <div class="acoes"><button class="bt forte peq" data-a="foco-nova">+ Nova tarefa</button></div></div>
+      ${sub}
+    </div>
+    <section class="p" id="nova-tarefa"><div class="ptit"><h2>Nova tarefa para o Claude</h2><span class="small muted">abre sozinha no app do Claude</span></div>
+      <form data-form="delegar" class="grade g-12" style="gap:14px">
+        <div><label class="rot">Onde ele vai trabalhar</label><select class="campo" name="pasta">${opcoes.map((o) => `<option value="${esc(o.caminho)}">${esc(o.rotulo)}</option>`).join("")}</select>
+          <p class="small muted">A pasta define o projeto. Ele só mexe nos arquivos de lá.</p></div>
+        <div><label class="rot">O que ele deve fazer</label><textarea class="campo" name="tarefa" placeholder="Ex.: Revise o login do aluno no ArcticLighthouseBackend e corrija o bug de token expirado. Rode os testes no final."></textarea>
+          <div class="acoes" style="margin-top:10px;justify-content:flex-end"><button class="bt forte">Delegar ao Claude</button></div></div>
+      </form></section>
+    <section class="p"><div class="ptit"><h2>Tarefas do Claude<em>opera</em></h2><small id="ag-res"></small></div><div class="tarefas" id="ag-tarefas"></div></section>`;
+  },
+  atualizar() {
+    const rod = G.tarefas.filter((d) => d.rodando).length;
+    desenha("ag-sen", `<span class="chip ${G.estado === "desligado" ? "c-sangue" : "c-verde"}">${esc(EST[G.estado]?.[1] || G.estado)}</span>`);
+    desenha("ag-cl", rod ? `<span class="chip c-ouro"><span class="dot vivo"></span>${rod} rodando</span>` : `<span class="chip c-nevoa">livre</span>`);
+    $("ag-res").textContent = `${G.tarefas.length} tarefas`;
+    desenha("ag-tarefas", G.tarefas.length ? G.tarefas.map(cartaoTarefa).join("") : `<div class="vazio">Nenhuma tarefa ainda.</div>`);
+  },
+};
+
+/* ---------- IV. Tarefas */
+const euNoNotion = () => G.extra.nucleo?.notion_eu || "";   // seu nome na conta do Notion, configurado em app/config.json
+const bancoNotion = () => G.extra.nucleo?.notion_banco || "Development Tracker";
+PAGINAS.tarefas = {
+  montar() {
+    this.busca = "";
+    return cabecalho("Officia", "Tarefas", "Suas tarefas do Obsidian (você marca e adiciona aqui mesmo) e as do Notion, lidas pelo Sêneca.") +
+    `<div class="grade tt-tela">
+      <section class="p tt-col"><div class="ptit"><h2>Minhas tarefas<em>obsidian</em></h2><span class="acoes"><small id="t-pend"></small><button class="bt peq" data-a="abrir-nota" data-c="tarefas.md">Abrir no Obsidian</button></span></div>
+        <form data-form="nova-tarefa" class="linha-form"><input class="campo" name="texto" placeholder="Nova tarefa…" style="flex:1;min-width:180px" autocomplete="off">
+          <select class="campo" name="secao" style="width:auto"><option>Hoje</option><option>Próximos dias</option><option>Algum dia</option></select><button class="bt forte">Adicionar</button></form>
+        <div class="tt-rola" id="t-locais"></div></section>
+      <section class="p tt-col"><div class="ptit"><h2>Notion<em>${esc(bancoNotion().toLowerCase())}</em></h2><span id="t-n-est"></span></div>
+        <div class="tt-filtros"><input class="campo tt-busca" placeholder="Buscar por tarefa ou responsável…" autocomplete="off" oninput="PAGINAS.tarefas.buscar(this.value)"><div class="acoes" id="t-n-filtros"></div></div>
+        <div class="tt-rola" id="t-notion"></div></section>
+    </div>`;
+  },
+  async carregar(forcar) {
+    const [t, n] = await Promise.all([api("/api/tarefas-locais"), api("/api/notion?tipo=tarefas" + (forcar ? "&forcar=1" : ""))]);
+    const secoes = t.secoes || [], feitas = secoes.flatMap((s) => s.itens.filter((i) => i.feito));
+    const pendentes = secoes.map((s) => ({ nome: s.nome, itens: s.itens.filter((i) => !i.feito) })).filter((s) => s.itens.length);
+    const linha = (i) => `<div class="check ${i.feito ? "feito" : ""}" data-a="marcar" data-l="${i.linha}" title="${i.feito ? "Voltar para pendente" : "Marcar como feita"}"><span class="cx"></span><span>${esc(i.texto)}</span>${i.feito ? `<button class="x-apagar" data-a="apagar-tarefa" data-l="${i.linha}" data-t="${esc(i.texto)}" title="Apagar" aria-label="Apagar tarefa">✕</button>` : ""}</div>`;
+    $("t-pend").textContent = `${pendentes.reduce((n, s) => n + s.itens.length, 0)} pendentes`;
+    desenha("t-locais", (pendentes.length ? pendentes.map((s) => `<div class="secao-t">${esc(s.nome)}</div>` + s.itens.map(linha).join("")).join("") : `<div class="vazio">Nada pendente.</div>`) +
+      (feitas.length ? `<div class="tt-cab-feitas"><div class="secao-t">Concluídas (${feitas.length})</div><button class="bt peq perigo" data-a="limpar-concluidas" data-n="${feitas.length}">Apagar todas</button></div>` + feitas.map(linha).join("") : ""));
+    const quando = n.quando ? `atualizado ${dataHora(n.quando)}` : "";
+    desenha("t-n-est", n.estado === "consultando" ? `<span class="small muted"><span class="spin"></span> o Sêneca está lendo o Notion…</span>` :
+      `<span class="acoes"><span class="small" style="color:var(--nevoa)">${quando}</span><button class="bt peq" data-a="notion-atualizar">↻ Atualizar</button></span>`);
+    this.notion = n;
+    this.desenharNotion();
+    this.notionConsultando = n.estado === "consultando";
+  },
+  filtro: "", busca: "", minhas: false,
+  buscar(texto) { this.busca = texto.trim().toLowerCase(); this.desenharNotion(); },
+  filtrar(status) { this.filtro = status; this.desenharNotion(); },
+  desenharNotion() {
+    const n = this.notion || {}, ordemS = ["In Progress", "Under review", "Sprint Current", "Sprint Backlog", "Backlog"], ordemP = ["High", "Medium", "Low"];
+    const pos = (lista, v) => { const i = lista.indexOf(v); return i < 0 ? lista.length : i; };
+    const tudo = [...(n.dados?.tarefas || [])].sort((a, b) => pos(ordemS, a.status) - pos(ordemS, b.status) || pos(ordemP, a.prioridade) - pos(ordemP, b.prioridade));
+    const minhas = tudo.filter((x) => (x.responsavel || "").toLowerCase().includes(euNoNotion()));
+    const todas = this.minhas ? minhas : tudo;
+    const status = [...new Set(todas.map((x) => x.status).filter(Boolean))];
+    if (this.filtro && !status.includes(this.filtro)) this.filtro = "";
+    const botao = (s, rotulo, qtd) => `<button class="bt peq ${this.filtro === s ? "forte" : ""}" data-a="notion-filtro" data-s="${esc(s)}">${esc(rotulo)} ${qtd}</button>`;
+    desenha("t-n-filtros", tudo.length ? `<button class="bt peq ${this.minhas ? "forte" : ""}" data-a="notion-minhas" title="Tarefas com você como responsável" style="margin-right:8px">Só minhas ${minhas.length}</button>` + botao("", "Todas", todas.length) + status.map((s) => botao(s, s, todas.filter((x) => x.status === s).length)).join("") : "");
+    const CORES_S = { "In Progress": "c-verde", "Under review": "c-orvalho", "Sprint Current": "c-ouro", "Sprint Backlog": "c-suave" }, CORES_P = { High: "c-sangue", Medium: "c-ouro" };
+    const lista = todas.filter((x) => (!this.filtro || x.status === this.filtro) && (!this.busca || `${x.titulo} ${x.responsavel}`.toLowerCase().includes(this.busca)));
+    const vazio = n.estado === "consultando" ? "Consultando o Notion (leva uns 30 s)…" : String(n.estado || "").startsWith("erro") ? "Não consegui ler o Notion: " + esc(n.estado) : tudo.length ? "Nada encontrado com esse filtro." : "Nenhuma tarefa aberta encontrada.";
+    desenha("t-notion", lista.length ? lista.map((x) => `<div class="tt-n"><span class="dot ${CORES_P[x.prioridade] || "c-nevoa"}" style="box-shadow:none" title="Prioridade: ${esc(x.prioridade || "sem")}"></span>
+      <b title="${esc(x.titulo)}${x.sprint ? " · " + esc(x.sprint) : ""}">${esc(x.titulo)}</b>
+      <span class="quem ${x.prazo ? "prazo" : ""}" title="${esc(x.responsavel)}">${x.prazo ? "prazo " + esc(x.prazo) : esc(x.responsavel)}</span>
+      <span class="chip ${CORES_S[x.status] || "c-nevoa"}">${esc(x.status || "sem status")}</span>
+      <button class="bt peq" data-a="notion-delegar" data-t="${esc(x.titulo)}" title="Pedir ao Claude">→ Claude</button></div>`).join("") : `<div class="vazio">${vazio}</div>`);
+  },
+  async montado() { await this.carregar(false); },
+  ciclo: 0,
+  atualizar() { if (this.notionConsultando && this.ciclo++ % 3 === 0) this.carregar(false); },
+};
+
+/* ---------- V. Calendário */
+PAGINAS.calendario = {
+  mes: null, sel: null,
+  montar() {
+    if (!this.mes) { const d = new Date(); this.mes = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
+    return cabecalho("Fasti", "Calendário", "Seus dias: conversas, tarefas do Claude, entradas do diário e a agenda do Notion.",
+      `<button class="bt" data-a="mes" data-d="-1">←</button><b id="c-titulo" style="min-width:170px;text-align:center;font:700 17px var(--display)"></b><button class="bt" data-a="mes" data-d="1">→</button><button class="bt peq" data-a="agenda-atualizar">↻ Agenda</button>`) +
+    `<div class="grade cal-tela"><section class="p tt-col"><div class="mes" id="c-mes"></div><div class="small" id="c-aviso" style="color:var(--nevoa);margin-top:10px"></div></section>
+      <section class="p tt-col" id="c-dia"><div class="vazio">Escolha um dia.</div></section></div>`;
+  },
+  async montado() { await this.carregar(); },
+  async carregar(forcarAgenda) {
+    if (forcarAgenda) await api("/api/notion?tipo=agenda&forcar=1");
+    const c = await api("/api/calendario?mes=" + this.mes); this.dados = c;
+    const [a, m] = this.mes.split("-").map(Number), prim = new Date(a, m - 1, 1), dias = new Date(a, m, 0).getDate();
+    $("c-titulo").textContent = prim.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }).replace(/^./, (x) => x.toUpperCase());
+    const hj = new Date(); const hojeS = `${hj.getFullYear()}-${String(hj.getMonth() + 1).padStart(2, "0")}-${String(hj.getDate()).padStart(2, "0")}`;
+    let h = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"].map((d) => `<div class="sem">${d}</div>`).join("");
+    for (let i = 0; i < prim.getDay(); i++) h += `<div class="dia fora"></div>`;
+    for (let d = 1; d <= dias; d++) {
+      const k = `${this.mes}-${String(d).padStart(2, "0")}`, x = c.dias[k] || {};
+      const marcas = [];
+      (x.eventos || []).slice(0, 2).forEach((e) => marcas.push(`<span class="m ev">● ${esc(e.titulo)}</span>`));
+      (x.prazos || []).slice(0, 1).forEach((e) => marcas.push(`<span class="m pz">⚑ ${esc(e.titulo)}</span>`));
+      if (x.conversas?.length) marcas.push(`<span class="m">◆ ${x.conversas.length} conversa${x.conversas.length > 1 ? "s" : ""}</span>`);
+      if (x.delegadas?.length) marcas.push(`<span class="m" style="color:var(--ouro)">CL ${x.delegadas.length} tarefa${x.delegadas.length > 1 ? "s" : ""}</span>`);
+      if (x.diario) marcas.push(`<span class="m" style="color:var(--verde)">✎ diário</span>`);
+      h += `<button class="dia ${k === hojeS ? "hoje" : ""} ${k === this.sel ? "sel" : ""}" data-a="dia" data-k="${k}"><span class="n">${d}</span>${marcas.join("")}</button>`;
+    }
+    $("c-mes").innerHTML = h;
+    $("c-aviso").innerHTML = c.estado_agenda === "consultando" ? `<span class="spin"></span> lendo a agenda do Notion…` : esc(c.aviso_agenda || "") || "● agenda do Notion · ⚑ prazo de tarefa · ◆ conversas · CL tarefas do Claude · ✎ diário";
+    this.consultando = c.estado_agenda === "consultando";
+    if (this.sel) this.mostrarDia(this.sel);
+  },
+  mostrarDia(k) {
+    this.sel = k; const x = this.dados?.dias[k] || {};
+    document.querySelectorAll(".dia").forEach((d) => d.classList.toggle("sel", d.dataset.k === k));
+    const [a, m, d] = k.split("-").map(Number), titulo = new Date(a, m - 1, d).toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+    const bloco = (t, itens) => itens ? `<div class="secao-t">${t}</div>${itens}` : "";
+    $("c-dia").innerHTML = `<div class="ptit"><h2>${esc(titulo)}</h2></div><div class="tt-rola">` +
+      bloco("Agenda", (x.eventos || []).map((e) => `<div class="item"><span class="ico c-orvalho">●</span><div><b>${esc(e.titulo)}</b><span class="s">${esc((e.inicio || "").slice(11, 16))}${e.fim ? " – " + esc(e.fim.slice(11, 16)) : ""} ${esc(e.local || "")}</span></div></div>`).join("")) +
+      bloco("Prazos", (x.prazos || []).map((e) => `<div class="item"><span class="ico c-ouro">⚑</span><div><b>${esc(e.titulo)}</b><span class="s">${esc(e.status || "")}</span></div></div>`).join("")) +
+      bloco("Conversas", (x.conversas || []).map((c) => `<button class="ti" data-a="ver-conversa" data-n="${esc(c.id)}" style="grid-template-columns:48px minmax(0,1fr)"><span class="h">${c.hora}</span><span class="t"><b class="corta">${esc(c.pedido)}</b></span></button>`).join("")) +
+      bloco("Tarefas do Claude", (x.delegadas || []).map((t) => `<div class="item"><span class="ico c-ouro">CL</span><div><b class="corta">${esc(t.titulo)}</b><span class="s">${esc(t.status)}</span></div><button class="bt peq" data-a="ver-tarefa" data-n="${esc(t.nome)}">ver</button></div>`).join("")) +
+      (x.diario ? `<div class="secao-t">Diário</div><button class="bt" data-a="ir-nota" data-c="diario/${k}.md">✎ Ler o diário deste dia</button>` : "") +
+      (!x.eventos?.length && !x.prazos?.length && !x.conversas?.length && !x.delegadas?.length && !x.diario ? `<div class="vazio">Dia tranquilo. Nada registrado.</div>` : "") + `</div>`;
+  },
+  ciclo: 0,
+  atualizar() { if (this.consultando && this.ciclo++ % 4 === 0) this.carregar(); },
+};
+
+/* ---------- VI. Memória */
+PAGINAS.memoria = {
+  sel: null, editando: false,
+  montar() {
+    return cabecalho("Memoria", "Memória", "Seu cofre do Obsidian: perfil, objetivos, tarefas, projetos, diário e notas. Leia, procure e edite aqui.") +
+    `<div class="grade g-12"><section class="p"><input class="campo" id="m-busca" placeholder="Procurar na memória…" autocomplete="off"><div class="notas-lista" id="m-lista" style="margin-top:10px"></div></section>
+      <section class="p" id="m-ver"><div class="vazio">Escolha uma nota.</div></section></div>`;
+  },
+  async montado() {
+    this.notas = await api("/api/memoria"); this.lista();
+    $("m-busca").addEventListener("input", (e) => { clearTimeout(this.tb); this.tb = setTimeout(() => this.buscar(e.target.value), 250); });
+    const c = G.params.c || this.sel || "perfil.md"; if (c) this.abrir(c);
+  },
+  lista() {
+    const grupos = {}; for (const n of this.notas) (grupos[n.grupo] ||= []).push(n);
+    const ordem = ["Quem sou", "Rotina", "Trabalho", "Diário", "Notas", "Outros"];
+    $("m-lista").innerHTML = ordem.filter((g) => grupos[g]).map((g) => `<div class="secao-t">${g}</div>` + grupos[g].sort((a, b) => g === "Diário" ? b.c.localeCompare(a.c) : a.titulo.localeCompare(b.titulo))
+      .map((n) => `<button class="nota-bt ${n.c === this.sel ? "sel" : ""}" data-a="ir-nota" data-c="${esc(n.c)}">${esc(n.titulo.replace(/^./, (x) => x.toUpperCase()))}<small>editado ${dataHora(n.mtime)}</small></button>`).join("")).join("");
+  },
+  async buscar(q) {
+    if (q.trim().length < 2) return this.lista();
+    const r = await api("/api/busca?q=" + encodeURIComponent(q));
+    $("m-lista").innerHTML = r.length ? r.map((x) => `<button class="nota-bt" data-a="ir-nota" data-c="${esc(x.c)}">${esc(x.titulo)} <small>linha ${x.linha}: ${esc(x.trecho)}</small></button>`).join("") : `<div class="vazio">Nada encontrado.</div>`;
+  },
+  async abrir(c) {
+    const n = await api("/api/nota?c=" + encodeURIComponent(c)); if (n.erro) return aviso("Nota não encontrada.", true);
+    this.sel = c; this.nota = n; this.editando = false; this.desenhar(); if (!$("m-busca").value) this.lista();
+  },
+  desenhar() {
+    const n = this.nota;
+    $("m-ver").innerHTML = `<div class="ptit"><h2 style="font:700 20px var(--display);letter-spacing:1px;text-transform:none">${esc(n.titulo.replace(/^./, (x) => x.toUpperCase()))}</h2>
+      <div class="acoes">${this.editando ? `<button class="bt" data-a="nota-cancelar">Cancelar</button><button class="bt forte" data-a="nota-salvar">Salvar</button>` : `${n.editavel ? `<button class="bt peq" data-a="nota-editar">✎ Editar</button>` : ""}<button class="bt peq" data-a="abrir-nota" data-c="${esc(n.c)}">Abrir no Obsidian</button>`}</div></div>
+      <div class="small" style="color:var(--nevoa);margin:-6px 0 12px" class="mono">${esc(n.caminho)}</div>
+      ${this.editando ? `<textarea class="campo mono" id="m-texto" style="min-height:60vh;font-size:13.5px">${esc(n.texto)}</textarea>` : `<div class="md">${md(n.texto)}</div>`}`;
+  },
+};
+
+/* ---------- VII. Conversas */
+PAGINAS.conversas = {
+  montar() {
+    return cabecalho("Sermo", "Conversas", "Tudo o que você pediu ao Sêneca, por voz ou por escrito.",
+      `<button class="bt" data-a="nova-conversa">✦ Nova conversa</button>`) +
+    `<div class="grade cv-tela">
+      <section class="p tt-col"><input class="campo" id="cv-filtro" placeholder="Filtrar conversas…" autocomplete="off"><div class="tt-rola" id="cv-dias"></div></section>
+      <section class="p tt-col"><div class="ptit"><h2 id="cv-titulo"></h2><small id="cv-ctx"></small></div>
+        <div class="chat" id="cv-chat"></div>
+        <form data-form="perguntar" class="escrever"><textarea class="campo" name="texto" rows="1" placeholder="Escreva para o Sêneca… (Enter envia, Shift+Enter quebra a linha)"></textarea><button class="bt forte" title="Enviar" aria-label="Enviar">➤</button></form></section>
+    </div>`;
+  },
+  dia: null,
+  montado() { this.dia = null; $("cv-filtro").addEventListener("input", () => { this.rolar = true; this.atualizar(); }); this.rolar = true; },
+  atualizar() {
+    const f = ($("cv-filtro")?.value || "").toLowerCase();
+    const chave = (t) => new Date(t * 1000).toLocaleDateString("sv");
+    const achados = G.hist.filter((h) => !f || (h.pedido + " " + h.resposta).toLowerCase().includes(f));
+    const dias = new Map(); for (const h of achados) { const k = chave(h.inicio); if (!dias.has(k)) dias.set(k, []); dias.get(k).push(h); }
+    const hoje = chave(Date.now() / 1000), ontem = chave(Date.now() / 1000 - 86400);
+    const nomeDia = (k, longo) => k === hoje ? "Hoje" : k === ontem ? "Ontem" : new Date(k + "T12:00").toLocaleDateString("pt-BR", longo ? { weekday: "long", day: "numeric", month: "long" } : { weekday: "short", day: "numeric", month: "short" }).replace(/^./, (c) => c.toUpperCase());
+    const sel = dias.has(this.dia) ? this.dia : dias.keys().next().value;
+    desenha("cv-dias", dias.size ? [...dias].map(([k, v]) => `<button class="cv-d ${k === sel ? "sel" : ""}" data-a="cv-dia" data-k="${k}"><span>${esc(nomeDia(k))}<i>${v.length}</i></span><small class="corta">${esc(v[0].pedido || "(sem texto)")}</small></button>`).join("") : `<div class="vazio">Nada encontrado.</div>`);
+    $("cv-titulo").textContent = sel ? nomeDia(sel, true) : "Conversas";
+    const lista = sel ? [...dias.get(sel)].reverse() : [];
+    const el = $("cv-chat"), noFim = !el || el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    desenha("cv-chat", lista.length ? lista.map((h) => {
+      const passos = h.passos?.filter((p) => p.tipo === "ferramenta").length || 0;
+      const origem = h.origem === "texto" ? "escrito" : h.origem === "voz" ? "voz" : "app";
+      return `<article class="cv-turno"><header><b>${esc(h.pedido || "(sem texto)")}</b><span class="cv-meta">${hm(h.inicio)} · ${origem}</span></header>
+        <div class="cv-ele ${h.status === "erro" ? "erro" : ""}"><span class="cv-selo" aria-hidden="true">S</span><div><span class="cv-meta">Sêneca${h.fim ? ` · ${Math.round(h.fim - h.inicio)}s` : ""}${passos ? ` · <a href="#" data-a="ver-conversa" data-n="${esc(h.id)}">${passos} ${passos > 1 ? "passos" : "passo"}</a>` : ""}</span>
+        ${h.status === "pensando" ? `<div class="cv-tx"><span class="spin"></span> pensando…</div>` : `<div class="cv-tx md">${md(h.resposta || "")}</div>`}</div></div></article>`;
+    }).join("")
+      : `<div class="vazio">Nenhuma conversa ainda. Escreva abaixo.</div>`);
+    if (el && (noFim || this.rolar)) { el.scrollTop = el.scrollHeight; this.rolar = false; }
+    $("cv-ctx").textContent = `Contexto atual: ${G.e.contexto ?? 0} trocas lembradas. ${G.e.ocupado ? "O Sêneca está ocupado agora." : ""}`;
+  },
+};
+
+/* ---------- VIII. Base de conhecimento */
+PAGINAS.conhecimento = {
+  async montar() {
+    const k = await api("/api/conhecimento");
+    const proj = k.projetos.map((p) => `<section class="p"><div class="ptit"><h2 style="text-transform:none;font-size:16px;letter-spacing:.5px">${esc(p.nome)}</h2>${p.status ? `<span class="chip c-ouro">${esc(p.status.split("(")[0].trim())}</span>` : ""}</div>
+      ${p.notas ? `<p class="small muted" style="margin-top:0">${esc(p.notas)}</p>` : ""}
+      <div class="lista">${(p.subpastas.length ? p.subpastas : p.caminhos.map((c) => ({ nome: c.split("\\").pop(), descricao: c, caminho: c }))).map((s) => `<div class="item"><span class="ico c-verde">${esc(s.nome.slice(0, 2).toUpperCase())}</span><div><b>${esc(s.nome)}</b><span class="s">${esc(s.descricao)}</span></div>
+        <div class="acoes"><button class="bt peq" data-a="abrir-pasta" data-c="${esc(s.caminho)}">Abrir pasta</button><button class="bt peq" data-a="delegar-aqui" data-c="${esc(s.caminho)}">Delegar aqui</button></div></div>`).join("")}</div>
+      ${p.status ? `<p class="small" style="color:var(--nevoa)">${esc(p.status)}</p>` : ""}</section>`).join("");
+    return cabecalho("Scientia", "Base de conhecimento", "Seus projetos, notas e a documentação do próprio Sêneca.") +
+    `<div class="grade g2">${proj}</div>
+    <div class="grade g2">
+      <section class="p"><div class="ptit"><h2>Notas<em>notae</em></h2></div><div class="lista">${k.notas.map((n) => `<button class="nota-bt" data-a="ir-nota" data-c="${esc(n.c)}">${esc(n.titulo)}<small>editado ${dataHora(n.mtime)}</small></button>`).join("") || `<div class="vazio">Sem notas.</div>`}</div></section>
+      <section class="p"><div class="ptit"><h2>Documentação<em>libri</em></h2></div><div class="lista">
+        ${k.docs.map((d) => `<button class="nota-bt" data-a="ver-doc" data-c="${esc(d.c)}">${esc(d.titulo.replace(/^./, (x) => x.toUpperCase()))}</button>`).join("")}
+        ${k.respostas ? `<button class="nota-bt" data-a="ir-nota" data-c="respostas-prontas.md">Respostas prontas</button>` : ""}</div></section>
+    </div>`;
+  },
+};
+
+/* ---------- IX. Ferramentas e habilidades */
+PAGINAS.ferramentas = {
+  async montar() {
+    const f = await api("/api/ferramentas");
+    return cabecalho("Instrumenta", "Ferramentas e habilidades", "O que o Sêneca pode usar e o que é proibido.") +
+    `<div class="grade g2">
+      <section class="p"><div class="ptit"><h2>Ferramentas do Sêneca</h2><small>${f.total}</small></div>
+        ${Object.entries(f.grupos).map(([g, itens]) => `<div class="secao-t">${esc(g)}</div><div class="acoes">${itens.map((i) => `<span class="chip c-verde">${esc(i)}</span>`).join("")}</div>`).join("")}
+        <div class="secao-t" style="color:var(--sangue)">Proibido</div><div class="acoes">${[...new Set(f.bloqueadas.map((b) => b.replace(/^(Bash|PowerShell)\(/, "").replace(/:\*\)$|\)$/, "").replace(/\*/g, "").replace(/\s+/g, " ").trim()))].map((b) => `<span class="chip c-sangue">${esc(b)}</span>`).join("")}</div></section>
+      <section class="p"><div class="ptit"><h2>Habilidades<em>artes</em></h2></div>
+        <div class="lista">${f.habilidades.map((h) => `<div class="item"><span class="ico c-orvalho">HB</span><div><b>${esc(h.nome)}</b><span class="s">${esc(h.descricao)}</span></div></div>`).join("") || `<div class="vazio">Nenhuma.</div>`}</div>
+        <div class="secao-t">Scripts</div><div class="lista">${f.scripts.map((s) => `<div class="item"><span class="ico ${s.desligado ? "c-nevoa" : "c-verde"}">PS</span><div><b>${esc(s.nome)}${s.desligado ? " (desligado)" : ""}</b><span class="s">${esc(s.descricao)}</span></div></div>`).join("")}</div></section>
+    </div>`;
+  },
+};
+
+/* ---------- X. Fluxos */
+PAGINAS.fluxos = {
+  async montar() {
+    const fl = await api("/api/fluxos"); this.fluxos = fl;
+    if (!G.extra.pastas) { const a = await api("/api/agentes"); G.extra.pastas = [{ rotulo: "Sêneca", caminho: G.extra.nucleo?.raiz || "" }, ...a.pastas]; }
+    const sel = (nome) => `<select class="campo" name="${nome}">${G.extra.pastas.map((o) => `<option value="${esc(o.caminho)}">${esc(o.rotulo)}</option>`).join("")}</select>`;
+    return cabecalho("Ritus", "Fluxos", "Rotinas prontas com um clique. As de “Sêneca responde” saem em conversa; as de “Claude executa” viram uma tarefa em segundo plano.") +
+    `<div class="grade g3">${fl.map((f) => `<form class="fluxo" data-form="fluxo" data-id="${esc(f.id)}">
+      <div class="topo-f"><span class="ico ${f.tipo === "delegar" ? "c-ouro" : "c-verde"}">${esc(f.icone || "✦")}</span><div><b>${esc(f.nome)}</b><div class="small ${f.tipo === "delegar" ? "c-ouro" : "c-verde"}">${f.tipo === "delegar" ? "Claude executa" : "Sêneca responde"}</div></div></div>
+      <div class="small muted">${esc(f.descricao || "")}</div>
+      ${f.pede === "texto" ? `<input class="campo" name="texto" placeholder="Sobre o quê?" required>` : ""}${f.pede === "projeto" ? sel("pasta") : ""}
+      <div class="acoes"><button class="bt forte peq">▶ Executar</button>${f.proprio ? `<button type="button" class="bt perigo peq" data-a="fluxo-apagar" data-n="${esc(f.id)}">Apagar</button>` : ""}</div></form>`).join("")}</div>
+    <section class="p"><div class="ptit"><h2>Criar um fluxo</h2></div>
+      <form data-form="fluxo-novo" class="grade g2" style="gap:14px">
+        <div><label class="rot">Nome</label><input class="campo" name="nome" placeholder="Ex.: Revisar PRs da semana" required>
+          <label class="rot">Descrição</label><input class="campo" name="descricao" placeholder="Para lembrar o que faz">
+          <label class="rot">Quem faz</label><select class="campo" name="tipo"><option value="perguntar">Sêneca responde (rápido)</option><option value="delegar">Claude executa (tarefa longa)</option></select>
+          <label class="rot">Ele pede algo antes?</label><select class="campo" name="pede"><option value="">Nada</option><option value="texto">Um texto (use {texto} no pedido)</option><option value="projeto">Um projeto (pasta)</option></select>
+          <label class="rot">Pasta (para o Claude)</label>${sel("pasta")}</div>
+        <div><label class="rot">Pedido</label><textarea class="campo" name="prompt" style="min-height:220px" placeholder="O que o Sêneca ou o Claude deve fazer. Pode usar {data}, {texto} e {conversas}."></textarea>
+          <div class="acoes" style="justify-content:flex-end;margin-top:10px"><button class="bt forte">Salvar fluxo</button></div></div>
+      </form></section>`;
+  },
+};
+
+/* ================= roteador ================= */
+async function navegar() {
+  const [rota, qs] = (location.hash.replace(/^#\/?/, "") || "").split("?");
+  let pag = rota || "centro"; if (pag.startsWith("d=")) { abrirTarefa(decodeURIComponent(pag.slice(2))); pag = "centro"; }
+  if (!PAGINAS[pag]) pag = "centro";
+  G.params = Object.fromEntries(new URLSearchParams(qs || ""));
+  G.pag = pag; document.body.dataset.pag = pag;
+  if (pag === "tarefas" || pag === "ferramentas") contadores();      // zera o aviso na hora
+  document.querySelectorAll("#nav a").forEach((a) => a.classList.toggle("on", a.dataset.pag === pag));
+  for (const k of Object.keys(G.cache)) if (k !== "gaveta") delete G.cache[k];
+  const P = PAGINAS[pag];
+  $("pagina").innerHTML = `<div class="vazio"><span class="spin"></span></div>`;
+  try { $("pagina").innerHTML = await P.montar(); } catch (e) { $("pagina").innerHTML = `<div class="p vazio">Não consegui abrir esta seção: ${esc(e.message)}</div>`; return; }
+  window.scrollTo(0, 0); relogio(); citacao();
+  if (P.montado) await P.montado();
+  P.atualizar?.();
+}
+window.addEventListener("hashchange", navegar);
+
+/* ================= gaveta ================= */
+function abrirConversa(id) { G.gaveta = { tipo: "conversa", id }; desenharGaveta(true); }
+async function abrirTarefa(nome) { G.gaveta = { tipo: "tarefa", nome, confirmar: false }; try { G.detalhes[nome] = await api("/api/delegada?nome=" + encodeURIComponent(nome)); } catch {} desenharGaveta(true); }
+async function abrirDoc(c) { const n = await api("/api/nota?c=" + encodeURIComponent(c)); G.gaveta = { tipo: "doc", n }; desenharGaveta(); }
+function cartaoVoz(v) {
+  const emUso = v.id === G.extra.perfis.atual, tocando = G.extra.tocando === v.id;
+  return `<div class="vz ${emUso ? "em-uso" : ""}"><div class="vz-tx"><b>${esc(v.nome)}${emUso ? ` <span class="chip c-verde">em uso</span>` : ""}</b><span>${esc(v.descricao)}</span></div>
+    ${v.disponivel ? `<div class="acoes"><button class="bt peq" data-a="voz-ouvir" data-v="${esc(v.id)}" ${G.extra.tocando ? "disabled" : ""}>${tocando ? `<span class="spin"></span> Preparando` : "\u25b6 Ouvir"}</button>${emUso ? "" : `<button class="bt forte peq" data-a="voz-usar" data-v="${esc(v.id)}">Usar</button>`}</div>` : `<span class="small c-nevoa">indispon\u00edvel</span>`}</div>`;
+}
+function fechar() { G.gaveta = null; G.cache.gaveta = ""; $("gaveta-raiz").innerHTML = ""; }
+function desenharGaveta(rolarFim) {
+  const g = G.gaveta; if (!g) return; let html = "";
+  if (g.tipo === "conversa") {
+    const h = G.hist.find((x) => x.id === g.id); if (!h) return;
+    const pensando = h.status === "pensando";
+    const faixa = pensando ? `<div class="faixa trab"><span class="spin"></span><div class="tx"><b>O Sêneca está trabalhando…</b><span>a resposta aparece aqui</span></div></div>` : h.status === "erro" ? `<div class="faixa erro"><span class="sinal">!</span><div class="tx"><b>Não deu certo</b><span>veja a mensagem abaixo</span></div></div>` : "";
+    html = `<header><div><div class="meta">${dataHora(h.inicio)}${h.fim ? ` · ${Math.round(h.fim - h.inicio)}s` : ""} · ${h.origem === "texto" ? "escrito" : h.origem}</div><h3>Conversa</h3></div><button class="bt" data-a="fechar">✕</button></header>
+      <div class="corpo" id="g-corpo">${pensando ? "" : faixa}<div class="sec"><b>Você pediu</b><div class="caixa">${esc(h.pedido)}</div></div>${h.resposta ? `<div class="sec"><b>Resposta</b><div class="caixa">${esc(h.resposta)}</div></div>` : ""}<div class="sec"><b>O que ele fez</b>${passosHtml(h.passos, pensando, true)}</div></div>${pensando ? `<div class="gaveta-rodape">${faixa}</div>` : ""}`;
+  } else if (g.tipo === "vozes") {
+    const L = G.extra.perfis?.lista || [], grupos = {};
+    L.forEach((v) => (grupos[v.grupo] ||= []).push(v));
+    html = `<header><div><div class="meta">ou\u00e7a antes de escolher; a troca vale na hora</div><h3>Voz do S\u00eaneca</h3></div><button class="bt" data-a="fechar">\u2715</button></header>
+      <div class="corpo" id="g-corpo">${Object.entries(grupos).map(([nome, vs]) => `<div class="sec"><b>${esc(nome)}</b><div class="lista">${vs.map(cartaoVoz).join("")}</div></div>`).join("")}</div>`;
+  } else if (g.tipo === "doc") {
+    html = `<header><div><div class="meta">${esc(g.n.caminho)}</div><h3>${esc(g.n.titulo)}</h3><div class="acoes"><button class="bt peq" data-a="abrir-nota" data-c="${esc(g.n.c)}">Abrir arquivo</button></div></div><button class="bt" data-a="fechar">✕</button></header><div class="corpo"><div class="md">${md(g.n.texto)}</div></div>`;
+  } else {
+    const d = G.detalhes[g.nome]; if (!d || d.erro) return;
+    const res = d.final?.texto || (d.rodando ? "" : d.resultado);
+    const parar = d.rodando ? `<button class="bt perigo" data-a="parar" data-n="${esc(d.nome)}">■ Parar</button>` : `<button class="bt perigo" data-a="apagar" data-n="${esc(d.nome)}">🗑 Apagar</button>`;
+    html = `<header><div><div class="meta">${esc(d.inicio)} · ${esc(d.pasta)}${d.final ? ` · ${d.final.segundos}s` : ""}</div><h3>${esc(d.titulo)}</h3>
+        <div class="acoes">${d.sessao ? `<button class="bt forte" data-a="abrir-claude" data-n="${esc(d.nome)}">↗ ${d.rodando ? "Ver ao vivo no Claude" : "Abrir no Claude"}</button>` : ""}${parar}<button class="bt" data-a="relatorio" data-n="${esc(d.nome)}">Relatório</button></div></div><button class="bt" data-a="fechar">✕</button></header>
+      <div class="corpo" id="g-corpo">${d.rodando ? "" : faixaTarefa(d)}
+      ${res ? `<div class="sec"><b>Resultado</b><div class="caixa md">${md(res)}</div></div>` : ""}
+      <details class="dobra" id="g-pedido"><summary>O que foi pedido</summary><div class="caixa">${esc(d.pedido)}</div></details>
+      ${d.rodando ? `<div class="sec"><b>Passo a passo</b>${passosHtml(d.passos, true, true)}</div>` : `<details class="dobra" id="g-passos"><summary>Ver o passo a passo${d.n_passos ? ` (${d.n_passos})` : ""}</summary>${d.passos.length ? passosHtml(d.passos, false) : `<div class="vazio">${d.tem_log ? "Sem passos registrados." : "Tarefa de antes do painel: só o relatório está disponível."}</div>`}</details>`}</div>${d.rodando ? `<div class="gaveta-rodape">${faixaTarefa(d)}</div>` : ""}`;
+  }
+  if (G.cache.gaveta === html) return;
+  const ant = $("g-corpo"), noFim = !ant || ant.scrollHeight - ant.scrollTop - ant.clientHeight < 80, posicao = ant?.scrollTop;
+  const abertos = [...document.querySelectorAll("#gaveta-raiz details[open]")].map((x) => x.id);
+  G.cache.gaveta = html; $("gaveta-raiz").innerHTML = `<div class="veu" data-a="fechar"></div><aside class="gaveta">${html}</aside>`;
+  abertos.forEach((id) => { const x = $(id); if (x) x.open = true; });
+  const c = $("g-corpo");
+  if (c) c.scrollTop = g.tipo === "tarefa" && G.detalhes[g.nome]?.rodando && (rolarFim || noFim) ? c.scrollHeight : (rolarFim ? 0 : posicao ?? 0);
+}
+
+/* ================= ações (cliques) ================= */
+const ACOES = {
+  "fechar": () => fechar(),
+  "ver-tarefa": (el) => abrirTarefa(el.dataset.n),
+  "ver-conversa": (el) => abrirConversa(el.dataset.n),
+  "ver-doc": (el) => abrirDoc(el.dataset.c),
+  "abrir-claude": async (el) => { const r = await post("/api/abrir-claude?nome=" + encodeURIComponent(el.dataset.n)); resultado(r, r.ao_vivo ? "No Claude, clique na tarefa “Sêneca · …” na barra lateral: ela está ao vivo." : "Abrindo no app do Claude…"); },
+  "relatorio": async (el) => resultado(await post("/api/abrir?nome=" + encodeURIComponent(el.dataset.n)), "Abrindo o relatório…"),
+  "parar": async (el) => { if (await confirmar("Parar o Claude?", "Ele interrompe a tarefa agora. O que já foi feito fica no relatório.", "Parar", true)) { resultado(await post("/api/parar?nome=" + encodeURIComponent(el.dataset.n)), "Tarefa parada."); await atualizarTarefas(); tick(); } },
+  "apagar": async (el) => {
+    const t = G.tarefas.find((x) => x.nome === el.dataset.n);
+    if (!await confirmar("Apagar esta tarefa?", `“${t?.titulo || el.dataset.n}”\n\nO relatório e o passo a passo vão para a Lixeira do Windows (dá para recuperar de lá). A sessão no app do Claude continua lá; se quiser, arquive por lá.`, "Mandar para a Lixeira", true)) return;
+    if (resultado(await post("/api/apagar?nome=" + encodeURIComponent(el.dataset.n)), "Tarefa enviada para a Lixeira.")) { if (G.gaveta?.nome === el.dataset.n) fechar(); delete G.detalhes[el.dataset.n]; await atualizarTarefas(); tick(); }
+  },
+  "nova-conversa": async () => resultado(await post("/api/nova-conversa"), "Conversa nova: o Sêneca esqueceu o contexto."),
+  "abrir-sessao": async () => resultado(await post("/api/abrir-sessao"), "Abrindo no app do Claude…"),
+  "reiniciar": async () => { if (await confirmar("Religar o Sêneca?", "Ele continua a conversa de onde parou.", "Religar")) resultado(await post("/api/reiniciar-servidor"), "Religando…"); },
+  "abrir-vozes": async () => { try { G.extra.perfis = await api("/api/vozes"); } catch { return aviso("O S\u00eaneca em execu\u00e7\u00e3o \u00e9 de uma vers\u00e3o antiga. Clique com o bot\u00e3o direito no S da bandeja, escolha Sair e abra o programa de novo.", true); } G.gaveta = { tipo: "vozes" }; G.cache.gaveta = ""; desenharGaveta(true); },
+  "voz-ouvir": async (el) => { G.extra.tocando = el.dataset.v; G.cache.gaveta = ""; desenharGaveta(); let r; try { r = await post("/api/ouvir-amostra", { voz: el.dataset.v }); } catch { r = { resultado: "O S\u00eaneca n\u00e3o respondeu." }; } G.extra.tocando = null; G.cache.gaveta = ""; desenharGaveta(); if (r.resultado !== "ok") aviso(r.resultado || "N\u00e3o consegui tocar.", true); },
+  "voz-usar": async (el) => { if (resultado(await post("/api/definir-voz", { voz: el.dataset.v }), "Voz trocada.")) { G.extra.perfis = await api("/api/vozes"); G.cache.gaveta = ""; desenharGaveta(); } },
+  "atualizar-seneca": async () => { if (await confirmar("Atualizar o S\u00eaneca?", "Ele religa com a vers\u00e3o mais nova e volta em uns 20 segundos. A conversa continua de onde parou.", "Atualizar")) { resultado(await post("/api/reiniciar-bandeja"), "Religando\u2026 a tela volta sozinha."); } },
+  "abrir-nota": async (el) => resultado(await post("/api/nota-abrir", { c: el.dataset.c }), "Abrindo…"),
+  "ir-nota": (el) => { location.hash = "#/memoria?c=" + encodeURIComponent(el.dataset.c); if (G.pag === "memoria") PAGINAS.memoria.abrir(el.dataset.c); },
+  "nota-editar": () => { PAGINAS.memoria.editando = true; PAGINAS.memoria.desenhar(); $("m-texto").focus(); },
+  "nota-cancelar": () => { PAGINAS.memoria.editando = false; PAGINAS.memoria.desenhar(); },
+  "nota-salvar": async () => { const M = PAGINAS.memoria; if (resultado(await post("/api/nota-salvar", { c: M.sel, texto: $("m-texto").value }), "Nota salva.")) M.abrir(M.sel); },
+  "marcar": async (el) => { if (resultado(await post("/api/tarefa-local", { acao: "alternar", linha: +el.dataset.l }), "Atualizado.")) { PAGINAS.tarefas.carregar(); contadores(); } },
+  "apagar-tarefa": async (el) => { if (await confirmar("Apagar esta tarefa?", `${el.dataset.t}\n\nEla sai do arquivo do Obsidian e não volta.`, "Apagar", true) && resultado(await post("/api/tarefa-local", { acao: "apagar", linha: +el.dataset.l, texto: el.dataset.t }), "Tarefa apagada.")) PAGINAS.tarefas.carregar(); },
+  "limpar-concluidas": async (el) => { if (await confirmar("Apagar todas as concluídas?", `${el.dataset.n} tarefa(s) saem do arquivo do Obsidian e não voltam. As pendentes ficam.`, "Apagar todas", true) && resultado(await post("/api/tarefa-local", { acao: "limpar" }), "Concluídas apagadas.")) PAGINAS.tarefas.carregar(); },
+  "cv-dia": (el) => { const C = PAGINAS.conversas; C.dia = el.dataset.k; C.rolar = true; C.atualizar(); },
+  "notion-filtro": (el) => PAGINAS.tarefas.filtrar(el.dataset.s),
+  "notion-minhas": () => { const T = PAGINAS.tarefas; T.minhas = !T.minhas; T.desenharNotion(); },
+  "notion-atualizar": async () => { await api("/api/notion?tipo=tarefas&forcar=1"); PAGINAS.tarefas.carregar(); },
+  "notion-delegar": (el) => irDelegar("", `Executar a tarefa do Notion "${el.dataset.t}" (${bancoNotion()}). Leia a página da tarefa no Notion para os detalhes e siga o que ela pede.`),
+  "foco-nova": () => { $("nova-tarefa").scrollIntoView({ behavior: "smooth" }); $("nova-tarefa").querySelector("textarea").focus(); },
+  "usar-sub": (el) => irDelegar(el.dataset.n === "pesquisador" ? (G.extra.nucleo?.raiz || "") : "", `Use o subagente ${el.dataset.n} para: `),
+  "delegar-aqui": (el) => irDelegar(el.dataset.c, ""),
+  "abrir-pasta": async (el) => resultado(await post("/api/abrir-pasta", { caminho: el.dataset.c }), "Abrindo a pasta…"),
+  "mes": (el) => { const C = PAGINAS.calendario, [a, m] = C.mes.split("-").map(Number), d = new Date(a, m - 1 + +el.dataset.d, 1); C.mes = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; C.sel = null; $("c-dia").innerHTML = `<div class="vazio">Escolha um dia.</div>`; C.carregar(); },
+  "dia": (el) => PAGINAS.calendario.mostrarDia(el.dataset.k),
+  "agenda-atualizar": () => { aviso("Pedindo ao Sêneca para ler a agenda do Notion…"); PAGINAS.calendario.carregar(true); },
+  "fluxo-apagar": async (el) => { if (await confirmar("Apagar este fluxo?", "Só o atalho some; nada mais é apagado.", "Apagar", true) && resultado(await post("/api/fluxo-apagar", { id: el.dataset.n }), "Fluxo apagado.")) navegar(); },
+};
+async function irDelegar(pasta, texto) {
+  if (G.pag !== "agentes") { location.hash = "#/agentes"; await new Promise((r) => setTimeout(r, 400)); while (!$("nova-tarefa")) await new Promise((r) => setTimeout(r, 100)); }
+  const f = $("nova-tarefa").querySelector("form");
+  if (pasta) { const s = f.pasta; if (![...s.options].some((o) => o.value === pasta)) s.add(new Option(pasta, pasta)); s.value = pasta; }
+  f.tarefa.value = texto; $("nova-tarefa").scrollIntoView({ behavior: "smooth" }); f.tarefa.focus();
+}
+document.addEventListener("click", (ev) => {
+  const el = ev.target.closest("[data-a]"); if (!el) return;
+  ev.preventDefault(); ACOES[el.dataset.a]?.(el);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { if ($("modal-raiz").innerHTML) $("modal-raiz").innerHTML = ""; else fechar(); }
+  if (e.key === "Enter" && !e.shiftKey && e.target.matches("form[data-form=perguntar] textarea")) { e.preventDefault(); e.target.form.requestSubmit(); }
+});
+
+/* ================= formulários ================= */
+const FORMS = {
+  async rapido(f) { const t = f.texto.value.trim(); if (!t) return; if (resultado(await post("/api/perguntar", { texto: t }), "Enviado ao Sêneca.")) { f.texto.value = ""; if (G.pag !== "conversas") location.hash = "#/conversas"; } },
+  async perguntar(f) { const t = f.texto.value.trim(); if (!t) return; if (resultado(await post("/api/perguntar", { texto: t }), "Enviado ao Sêneca.")) { f.texto.value = ""; PAGINAS.conversas.rolar = true; setTimeout(tick, 300); } },
+  async delegar(f) {
+    const tarefa = f.tarefa.value.trim(), pasta = f.pasta.value; if (tarefa.length < 8) return aviso("Descreva melhor a tarefa.", true);
+    if (!await confirmar("Delegar ao Claude?", `Pasta: ${pasta}\n\n${tarefa.slice(0, 400)}`, "Delegar")) return;
+    if (resultado(await post("/api/delegar", { pasta, tarefa }), "Delegado! Abrindo no app do Claude…")) { f.tarefa.value = ""; setTimeout(async () => { await atualizarTarefas(); tick(); }, 1500); }
+  },
+  async "nova-tarefa"(f) { const t = f.texto.value.trim(); if (!t) return; if (resultado(await post("/api/tarefa-local", { acao: "adicionar", texto: t, secao: f.secao.value }), "Tarefa adicionada.")) { f.texto.value = ""; PAGINAS.tarefas.carregar(); contadores(); } },
+  async fluxo(f) {
+    const fl = PAGINAS.fluxos.fluxos.find((x) => x.id === f.dataset.id); if (!fl) return;
+    if (fl.tipo === "delegar" && !await confirmar(`Executar “${fl.nome}”?`, "Isso cria uma tarefa para o Claude em segundo plano. Ela abre no app do Claude.", "Executar")) return;
+    const r = await post("/api/fluxo-executar", { id: fl.id, texto: f.texto?.value || "", pasta: f.pasta?.value || "" });
+    if (resultado(r, fl.tipo === "delegar" ? "Delegado ao Claude." : "O Sêneca está respondendo. Veja em Conversas.")) { if (fl.tipo === "perguntar") location.hash = "#/conversas"; else setTimeout(async () => { await atualizarTarefas(); }, 1500); }
+  },
+  async "fluxo-novo"(f) {
+    const d = Object.fromEntries(new FormData(f)); if (resultado(await post("/api/fluxo-salvar", d), "Fluxo criado.")) navegar();
+  },
+};
+document.addEventListener("submit", (ev) => { const f = ev.target.closest("form[data-form]"); if (!f) return; ev.preventDefault(); FORMS[f.dataset.form]?.(f); });
+document.addEventListener("change", async (ev) => {
+  if (ev.target.id === "n-mic") { ev.target.blur(); resultado(await post("/api/definir-microfone", { nome: ev.target.value }), "Microfone trocado."); return; }
+  const c = ev.target.closest("[data-cfg]"); if (!c) return;
+  resultado(await post("/api/config", { chave: c.dataset.cfg, valor: c.checked }), c.checked ? "Ligado." : "Desligado.");
+});
+
+/* ================= ciclo ================= */
+let n = 0;
+async function tick() {
+  await Promise.all([atualizarEstado(), atualizarHistorico(), atualizarTarefas()]);
+  if (n % 3 === 0) await atualizarSistema();
+  if (n % 20 === 0) await atualizarUso();
+  if (n % 40 === 0) contadores();
+  n++;
+  try { PAGINAS[G.pag]?.atualizar?.(); } catch (e) { console.error(e); }
+  if (G.gaveta) desenharGaveta();
+}
+(async () => { await atualizarSistema(); await atualizarUso(); await navegar(); tick(); setInterval(tick, 1500); })();
+</script>
+</body>
+</html>

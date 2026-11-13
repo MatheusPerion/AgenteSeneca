@@ -1,0 +1,37 @@
+# Segredos e configuração pessoal (cada um cria os seus a partir dos .exemplo)
+config/elevenlabs.json
+app/config.json
+.claude/settings.local.json
+
+# Memória pessoal (cofre Obsidian) — fica só na sua máquina
+memoria/*.md
+memoria/diario/
+memoria/notas/*
+!memoria/notas/LEIA-ME.md
+!memoria/*.exemplo.md
+
+# Dados de execução, cache e logs
+app/dados/
+app/log.txt
+app/__pycache__/
+**/__pycache__/
+*.pyc
+tarefas/*
+!tarefas/.gitkeep
+.claude/scheduled_tasks.lock
+
+# Vozes locais (Piper): baixe com scripts/baixar-vozes.ps1, não vão pro git (~60MB cada)
+app/vozes/*.onnx
+app/vozes/*.onnx.json
+
+# Dependências instaláveis (recrie com uv/npm)
+.venv/
+app/node_modules/
+
+# Rascunhos e lixo
+_lixeira/
+
+# Windows / editores
+Thumbs.db
+*.lnk
+.vscode/

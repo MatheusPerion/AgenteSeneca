@@ -1,0 +1,4 @@
+{
+  "_ajuda": "Copie este arquivo para elevenlabs.json (sem '.exemplo'). Crie uma chave na sua conta da ElevenLabs (procure por API Keys) e cole entre as aspas de api_key. Salve o arquivo: vale na próxima fala, sem religar nada. Sem chave, o Sêneca usa as vozes online (edge-tts) ou locais (Piper) normalmente.",
+  "api_key": ""
+}
