@@ -22,28 +22,28 @@ TITULO = "Sêneca — Centro de Comando"
 URL = f"http://127.0.0.1:{PORTA}/"
 PYTHONW = Path(sys.executable).with_name("pythonw.exe")
 
-FUNDO = "#020504"
+FUNDO = "#050504"
 _TELA = """<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>
 html,body{height:100%;margin:0;overflow:hidden}
-body{display:grid;place-items:center start;background:radial-gradient(900px 600px at 30% 45%,rgba(20,90,50,.34),transparent 70%),__FUNDO__;
+body{display:grid;place-items:center start;background:radial-gradient(900px 600px at 30% 45%,rgba(86,71,38,.34),transparent 70%),__FUNDO__;
 font:600 13px "Segoe UI",system-ui,sans-serif;color:__COR__;user-select:none}
 .marmore{position:fixed;top:0;bottom:0;right:0;aspect-ratio:1;transform:translateX(12%);background:url(data:image/jpeg;base64,__MARMORE__) center/cover no-repeat;mix-blend-mode:screen;
 -webkit-mask-image:linear-gradient(90deg,transparent 4%,#000 34%),linear-gradient(0deg,transparent 3%,#000 24%);-webkit-mask-composite:source-in}
 .selo{position:relative;width:208px;height:208px;margin:0 auto 26px;display:grid;place-items:center}
-.selo img{width:168px;height:168px;filter:drop-shadow(0 0 22px rgba(61,255,143,.35))}
+.selo img{width:168px;height:168px;filter:drop-shadow(0 0 22px rgba(242,202,110,.35))}
 .selo svg{position:absolute;inset:0;animation:__ANIMA__}
 @keyframes giro{to{transform:rotate(360deg)}}
-b{display:block;font:700 34px Cinzel,Georgia,serif;letter-spacing:9px;margin-right:-9px;color:#3dff8f;text-shadow:0 0 18px rgba(61,255,143,.4)}
+b{display:block;font:700 34px Cinzel,Georgia,serif;letter-spacing:9px;margin-right:-9px;color:#f2ca6e;text-shadow:0 0 18px rgba(242,202,110,.4)}
 p{margin:12px 0 0;letter-spacing:3px}
 </style></head><body><div class="marmore"></div><div style="position:relative;z-index:1;text-align:center;margin-left:clamp(48px,13vw,240px)">
 <div class="selo"><img alt="" src="data:image/png;base64,__SELO__"><svg viewBox="0 0 208 208"><circle cx="104" cy="104" r="100" fill="none"
-stroke="#3dff8f" stroke-opacity=".3" stroke-dasharray="3 9"/><path d="M104 4a100 100 0 0 1 70.7 29.3" fill="none" stroke="__COR_ARCO__" stroke-width="3" stroke-linecap="round"/></svg></div>
+stroke="#f2ca6e" stroke-opacity=".3" stroke-dasharray="3 9"/><path d="M104 4a100 100 0 0 1 70.7 29.3" fill="none" stroke="__COR_ARCO__" stroke-width="3" stroke-linecap="round"/></svg></div>
 <b>SÊNECA</b><p>__TEXTO__</p></div></body></html>"""
 
 
 def tela(texto: str, erro: bool = False) -> str:
     """Tela de abertura, no mesmo tema verde do painel."""
-    trocas = {"__FUNDO__": FUNDO, "__COR__": "#ff6170" if erro else "#86a690", "__COR_ARCO__": "#ff6170" if erro else "#3dff8f",
+    trocas = {"__FUNDO__": FUNDO, "__COR__": "#ff6170" if erro else "#9e9788", "__COR_ARCO__": "#ff6170" if erro else "#f2ca6e",
               "__ANIMA__": "none" if erro else "giro 1.6s linear infinite", "__TEXTO__": texto,
               "__SELO__": base64.b64encode((APP / "seneca.png").read_bytes()).decode(),
               "__MARMORE__": base64.b64encode((APP / "img" / "marmore.jpg").read_bytes()).decode()}

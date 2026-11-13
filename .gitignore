@@ -20,6 +20,9 @@ tarefas/*
 !tarefas/.gitkeep
 .claude/scheduled_tasks.lock
 
+# Extensão pessoal do painel (cada um tem a sua, se quiser: app/pessoal/extensao.py + painel.js)
+app/pessoal/
+
 # Vozes locais (Piper): baixe com scripts/baixar-vozes.ps1, não vão pro git (~60MB cada)
 app/vozes/*.onnx
 app/vozes/*.onnx.json

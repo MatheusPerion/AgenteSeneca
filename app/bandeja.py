@@ -97,7 +97,7 @@ def carregar_config() -> dict:
 # ----------------------------------------------------------------- bandeja
 CORES = {
     "iniciando": (120, 120, 120),
-    "pronto": (31, 211, 111),     # verde: pronto, segure Ctrl direito
+    "pronto": (200, 164, 77),   # dourado: pronto, segure Ctrl direito
     "gravando": (220, 50, 50),    # vermelho
     "transcrevendo": (230, 160, 30),
     "pensando": (230, 160, 30),   # laranja
@@ -120,7 +120,7 @@ def _imagem(cor):
     d = ImageDraw.Draw(img)
     hexa = [(32 + 29 * math.cos(math.radians(a)), 32 + 29 * math.sin(math.radians(a)))
             for a in range(-90, 270, 60)]
-    d.polygon(hexa, fill=(4, 8, 5, 255), outline=cor + (255,), width=5)      # selo preto, borda na cor do estado
+    d.polygon(hexa, fill=(8, 7, 6, 255), outline=cor + (255,), width=5)      # selo preto, borda na cor do estado
     try:
         d.text((32, 34), "S", fill=cor + (255,), font_size=34, anchor="mm")
     except Exception:

@@ -407,6 +407,25 @@ def parar_delegada(nome: str) -> str:
 
 # ----------------------------------------------------------------- sistema (monitor, clima, conexões)
 _cache: dict = {"clima": ("", 0.0), "servidor": (False, 0.0), "uso": 0.0, "cpu": 0.0}
+PESSOAL = APP / "pessoal"                  # extensão opcional de cada máquina (fora do git): extensao.py + painel.js
+_extensao: dict = {}
+
+
+def extensao_pessoal():
+    """Carrega app/pessoal/extensao.py uma vez, se existir. Sem ela, o painel funciona igual."""
+    if "modulo" not in _extensao:
+        _extensao["modulo"] = None
+        arq = PESSOAL / "extensao.py"
+        if arq.exists():
+            import importlib.util
+            try:
+                spec = importlib.util.spec_from_file_location("extensao_pessoal", arq)
+                modulo = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(modulo)
+                _extensao["modulo"] = modulo
+            except Exception as e:
+                print(f"extensão pessoal não carregou: {e}")
+    return _extensao["modulo"]
 
 
 def _medir_cpu() -> None:
@@ -511,6 +530,9 @@ class Painel:
             self.ultimo_acesso = time.time()
             # a janela aberta compara esta versão e se recarrega quando algo muda
             return {**self.obter_estado(), "versao": f"{TOKEN}-{(APP / 'painel.html').stat().st_mtime}"}
+        ext = extensao_pessoal()
+        if ext and rota in getattr(ext, "ROTAS", {}):
+            return ext.ROTAS[rota](q)
         tabela = {
             "/api/sistema": sistema,
             "/api/uso": uso,
@@ -615,6 +637,9 @@ class Painel:
             return {"resultado": r.salvar_fluxo(corpo)}
         if rota == "/api/fluxo-apagar":
             return {"resultado": r.apagar_fluxo(corpo.get("id", ""))}
+        ext = extensao_pessoal()
+        if ext and rota in getattr(ext, "ROTAS_POST", {}):
+            return ext.ROTAS_POST[rota](corpo)
         return None
 
     def iniciar(self) -> bool:
@@ -639,9 +664,19 @@ class Painel:
                 try:
                     if u.path in ("/", "/index.html"):
                         html = (APP / "painel.html").read_text(encoding="utf-8")
+                        if (PESSOAL / "painel.js").exists():
+                            html = html.replace("</body>", '<script src="/pessoal.js"></script>\n</body>')
                         corpo = html.replace("__TOKEN__", TOKEN).encode("utf-8")
                         self.send_response(200)
                         self.send_header("Content-Type", "text/html; charset=utf-8")
+                        self.send_header("Cache-Control", "no-store")
+                        self.send_header("Content-Length", str(len(corpo)))
+                        self.end_headers()
+                        self.wfile.write(corpo)
+                    elif u.path == "/pessoal.js" and (PESSOAL / "painel.js").exists():
+                        corpo = (PESSOAL / "painel.js").read_bytes()
+                        self.send_response(200)
+                        self.send_header("Content-Type", "text/javascript; charset=utf-8")
                         self.send_header("Cache-Control", "no-store")
                         self.send_header("Content-Length", str(len(corpo)))
                         self.end_headers()
