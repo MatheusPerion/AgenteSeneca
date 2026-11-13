@@ -26,6 +26,21 @@ valor seu), não um texto fixo no código.
 Não é um app genérico de IA — ele usa o Claude Agent SDK, skills e subagentes do Claude Code diretamente. Se a sua
 ideia depende de outro motor de IA, veja a seção "Importante" do [README.md](README.md) antes de começar.
 
+## Fluxo de feature (Spec Kit)
+Este repositório usa o [Spec Kit](https://github.com/github/spec-kit) pra planejar features maiores antes de
+implementar. Dentro de uma sessão do Claude Code, nesta pasta:
+
+1. `/speckit-constitution` — só na primeira vez, ou quando os princípios do projeto mudarem.
+2. `/speckit-specify <descrição da feature>` — cria `specs/NNN-nome/spec.md` com o que a feature deve fazer.
+3. `/speckit-clarify` (opcional) — se a especificação ficou com pontos em aberto.
+4. `/speckit-plan` — gera o plano técnico (`plan.md`) a partir da spec.
+5. `/speckit-tasks` — quebra o plano em tarefas (`tasks.md`).
+6. `/speckit-analyze` (opcional) — confere se spec/plano/tarefas batem entre si.
+7. `/speckit-implement` — executa as tarefas.
+
+Para ajustes pequenos (um bug, um texto, um apelido em `SITES`), não precisa passar por isso — é só editar e mandar
+o PR. O fluxo acima é para features novas com mais de um arquivo/decisão envolvida.
+
 ## Testando
 Não há suíte de testes automatizados ainda. Pelo menos: rode `python -m py_compile` nos arquivos `.py` que você
 mexeu, `node --check` nos `.mjs`, e, se puder, abra o Sêneca (`Instalar.bat` ou `pythonw app/seneca_app.pyw`) pra
