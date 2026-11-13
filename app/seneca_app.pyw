@@ -81,7 +81,7 @@ def main():
         trazer_para_frente()
         return
     # ícone próprio na barra de tarefas (não agrupa com o Python)
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Matheus.Seneca.CentroDeComando")
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Seneca.CentroDeComando")
 
     import webview
 

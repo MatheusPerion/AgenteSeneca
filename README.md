@@ -9,52 +9,51 @@ Windows apenas (bandeja, atalhos de teclado, caminhos). Feito para ser **adaptad
 com os seus dados e o Sêneca passa a falar com você, não com quem o escreveu.
 
 ## Pré-requisitos
-- [Claude Code](https://claude.com/claude-code) com uma assinatura ativa, autenticado nesta máquina.
-- Windows 10/11, Python 3.12+, [Node.js](https://nodejs.org) 18+.
-- [uv](https://docs.astral.sh/uv/) (recomendado) para o ambiente Python: `winget install astral-sh.uv`.
+- [Claude Code](https://claude.com/claude-code), com uma assinatura Claude ativa. Só funciona com Claude — veja
+  "Importante" mais abaixo.
+- Windows 10/11, Python 3.12+ e [Node.js](https://nodejs.org) 18+ instalados (o instalador abaixo confere isso).
 
-## Instalação
+## Instalação (um comando)
 ```bash
 git clone https://github.com/<seu-usuario>/seneca.git
 cd seneca
-uv venv
-uv pip install -r requirements.txt
 ```
-```bash
-cd app && npm install
-```
+Depois, dê **duplo-clique em `Instalar.bat`** (ou rode `scripts/instalar.ps1`). Ele confere Python e Node, cria o
+ambiente (`uv` se tiver, senão `venv`/`pip`), roda `npm install`, pergunta seu nome, apelido, cidade e a pasta onde
+ficam seus projetos — e já deixa tudo escrito em `memoria/perfil.md` e `app/config.json` por você. No fim, oferece
+pra abrir o Sêneca.
+
+Se ainda não entrou no Claude Code nesta máquina, rode `claude` (ou `npx claude`) uma vez dentro da pasta e faça
+login com a sua conta — é a única parte que o instalador não faz por você.
 
 Vozes locais (Piper, offline) são opcionais — sem elas o Sêneca usa vozes online (edge-tts) normalmente:
 ```bash
 powershell -File scripts/baixar-vozes.ps1
 ```
 
-## Adapte para você
-Nada aqui tem seu nome, sua cidade ou suas contas: é tudo configuração, nos lugares abaixo.
+## Importante: só funciona com Claude
+O Sêneca é construído em cima do Claude Code (`CLAUDE.md`, os skills em `.claude/skills/`, os subagentes em
+`.claude/agents/` e o cérebro em `app/cerebro.mjs` usam o [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk)
+diretamente). Hoje **não dá pra trocar por Codex, Llama ou outro modelo** sem reescrever essa camada inteira — não é
+uma chave de configuração, é arquitetura. Se você quiser outro motor de IA, esse é um projeto à parte.
 
-1. **Quem é você.** Copie cada `memoria/*.exemplo.md` para o mesmo nome sem `.exemplo` (ex.: `memoria/perfil.exemplo.md`
-   → `memoria/perfil.md`) e preencha nome, apelido, cidade e fuso horário em `memoria/perfil.md`. Esses arquivos ficam
-   só na sua máquina (estão no `.gitignore`).
-2. **`app/config.json`** — é criado automaticamente na primeira vez que o Sêneca liga, com os padrões de
-   `app/bandeja.py` (`PADRAO`). Edite (ou peça ao Sêneca para editar) os campos que fizerem sentido:
-   | Campo | Para quê |
-   |---|---|
-   | `nome` | como ele te chama na notificação de boas-vindas |
-   | `cidade_clima` | cidade usada no clima do painel e em `scripts/clima.ps1` |
-   | `workspace` | pasta onde ficam seus projetos (vazio = a pasta acima desta) |
-   | `notion_banco` | nome do seu banco de tarefas no Notion (vazio = "Development Tracker") |
-   | `notion_eu` | seu nome na conta do Notion, para o filtro "Só minhas" em Tarefas |
-3. **Pasta de projetos.** Ajuste `additionalDirectories` em [.claude/settings.json](.claude/settings.json) para a
-   mesma pasta que você colocou em `workspace` — é o que dá ao Claude Code permissão de editar arquivos fora desta
-   pasta.
-4. **Conectores.** Notion, Google Agenda etc. são conectados no próprio Claude Code (não há chave de API aqui para
-   isso); o Sêneca só lê o que você conectar. Depois de conectar, edite `memoria/perfil.md` e `app/config.json` com o
-   nome do banco/conta.
-5. **Vozes online** já funcionam sem configurar nada (edge-tts, grátis). Para ElevenLabs (opcional, pago): copie
-   `config/elevenlabs.exemplo.json` para `config/elevenlabs.json` e cole sua chave — este arquivo também fica de fora
-   do git.
-6. **Apelidos de apps e sites.** `scripts/abrir.ps1`, `scripts/fechar.ps1` e `app/rapido.py` (dicionário `SITES`) têm
-   alguns apelidos de exemplo (navegador, vscode, lol…) — edite à vontade para os seus.
+## Ajustando depois (sem o instalador)
+O instalador cobre o essencial, mas estes pontos continuam editáveis a qualquer momento:
+
+| Onde | Para quê |
+|---|---|
+| `memoria/perfil.md` | nome, apelido, cidade, fuso horário (criado pelo instalador; `*.exemplo.md` é o modelo) |
+| `app/config.json` → `nome` | como ele te chama na notificação de boas-vindas |
+| `app/config.json` → `cidade_clima` | cidade usada no clima do painel e em `scripts/clima.ps1` |
+| `app/config.json` → `workspace` | pasta onde ficam seus projetos |
+| `app/config.json` → `notion_banco` | nome do seu banco de tarefas no Notion (vazio = "Development Tracker") |
+| `app/config.json` → `notion_eu` | seu nome na conta do Notion, para o filtro "Só minhas" em Tarefas |
+| [.claude/settings.json](.claude/settings.json) → `additionalDirectories` | precisa bater com `workspace` acima |
+| `config/elevenlabs.json` (opcional) | chave da ElevenLabs, para voz premium — copie de `config/elevenlabs.exemplo.json` |
+| `scripts/abrir.ps1`, `scripts/fechar.ps1`, `app/rapido.py` (`SITES`) | apelidos de apps e sites — os de exemplo são meus hábitos, troque pelos seus |
+
+Conectores (Notion, Google Agenda etc.) são ligados no próprio Claude Code; o Sêneca só lê o que você conectar.
+Depois de conectar, volte em `memoria/perfil.md` e `app/config.json` com o nome do banco/conta.
 
 ## Como usar
 Depois de configurado, veja [LEIA-ME.md](LEIA-ME.md): atalho de voz, palavra de ativação, cores da bandeja, o painel e
