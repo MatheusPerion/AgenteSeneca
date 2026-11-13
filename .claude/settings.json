@@ -34,7 +34,6 @@
       "Bash(rm:*)", "Bash(del:*)", "Bash(Remove-Item:*)", "Bash(taskkill:*)", "Bash(Stop-Process:*)",
       "PowerShell(rm:*)", "PowerShell(del:*)", "PowerShell(Remove-Item:*)", "PowerShell(taskkill:*)", "PowerShell(Stop-Process:*)",
       "Bash(*whatsapp*)", "PowerShell(*whatsapp*)"
-    ],
-    "additionalDirectories": ["D:/Workspace"]
+    ]
   }
 }

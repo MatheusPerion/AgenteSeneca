@@ -31,8 +31,20 @@ const curto = (v, n = 400) => {
   return s.length > n ? s.slice(0, n) + "…" : s;
 };
 
+function permissoes() {
+  // settings.json é compartilhado (vai pro git); settings.local.json é de cada um (additionalDirectories, por exemplo).
+  const base = JSON.parse(readFileSync(join(RAIZ, ".claude", "settings.json"), "utf8")).permissions;
+  let local = {};
+  try { local = JSON.parse(readFileSync(join(RAIZ, ".claude", "settings.local.json"), "utf8")).permissions || {}; } catch { /* opcional */ }
+  return {
+    allow: base.allow,
+    deny: base.deny,
+    additionalDirectories: local.additionalDirectories || base.additionalDirectories || [],
+  };
+}
+
 function opcoes() {
-  const { allow, deny, additionalDirectories } = JSON.parse(readFileSync(join(RAIZ, ".claude", "settings.json"), "utf8")).permissions;
+  const { allow, deny, additionalDirectories } = permissoes();
   return {
     cwd: RAIZ,
     settingSources: ["user", "project", "local"],

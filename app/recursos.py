@@ -112,10 +112,18 @@ def pasta_permitida(caminho: str) -> Path | None:
 
 # ----------------------------------------------------------------- núcleo de IA
 def _permissoes() -> dict:
+    """settings.json é compartilhado (vai pro git); settings.local.json é de cada um (additionalDirectories, por exemplo)."""
     try:
-        return json.loads((RAIZ / ".claude" / "settings.json").read_text(encoding="utf-8"))["permissions"]
+        base = dict(json.loads((RAIZ / ".claude" / "settings.json").read_text(encoding="utf-8"))["permissions"])
     except Exception:
-        return {}
+        base = {}
+    try:
+        local = json.loads((RAIZ / ".claude" / "settings.local.json").read_text(encoding="utf-8")).get("permissions", {})
+    except Exception:
+        local = {}
+    if local.get("additionalDirectories"):
+        base["additionalDirectories"] = local["additionalDirectories"]
+    return base
 
 
 def nucleo() -> dict:

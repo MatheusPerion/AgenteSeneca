@@ -80,11 +80,16 @@ if (-not (Test-Path "memoria\perfil.md")) {
     $cfg["workspace"] = $workspace
     $cfg | ConvertTo-Json -Depth 5 | Set-Content -Path "app\config.json" -Encoding UTF8
 
-    # .claude/settings.json: libera a pasta de projetos escolhida acima
-    $settings = Get-Content ".claude\settings.json" -Raw | ConvertFrom-Json
-    $settings.permissions.additionalDirectories = @($workspace -replace '\\', '/')
-    $settings | ConvertTo-Json -Depth 10 | Set-Content -Path ".claude\settings.json" -Encoding UTF8
-    "Perfil salvo em memoria\perfil.md. Pasta de projetos liberada: $workspace"
+    # .claude/settings.local.json (não vai pro git): libera a pasta de projetos escolhida acima.
+    # Fica separado de .claude/settings.json de propósito — esse é compartilhado entre quem usa o Sêneca.
+    $settingsLocal = [ordered]@{ permissions = [ordered]@{ allow = @() } }
+    if (Test-Path ".claude\settings.local.json") {
+        $existente = Get-Content ".claude\settings.local.json" -Raw | ConvertFrom-Json
+        $settingsLocal.permissions.allow = @($existente.permissions.allow)
+    }
+    $settingsLocal.permissions.additionalDirectories = @($workspace -replace '\\', '/')
+    $settingsLocal | ConvertTo-Json -Depth 10 | Set-Content -Path ".claude\settings.local.json" -Encoding UTF8
+    "Perfil salvo em memoria\perfil.md. Pasta de projetos liberada (só pra você): $workspace"
 } else {
     "memoria\perfil.md já existe — não mexi. Para refazer, apague esse arquivo e rode de novo."
 }

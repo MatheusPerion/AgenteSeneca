@@ -48,7 +48,7 @@ O instalador cobre o essencial, mas estes pontos continuam editáveis a qualquer
 | `app/config.json` → `workspace` | pasta onde ficam seus projetos |
 | `app/config.json` → `notion_banco` | nome do seu banco de tarefas no Notion (vazio = "Development Tracker") |
 | `app/config.json` → `notion_eu` | seu nome na conta do Notion, para o filtro "Só minhas" em Tarefas |
-| [.claude/settings.json](.claude/settings.json) → `additionalDirectories` | precisa bater com `workspace` acima |
+| `.claude/settings.local.json` → `additionalDirectories` | precisa bater com `workspace` acima (fica fora do git — nunca edite isso em `.claude/settings.json`) |
 | `config/elevenlabs.json` (opcional) | chave da ElevenLabs, para voz premium — copie de `config/elevenlabs.exemplo.json` |
 | `scripts/abrir.ps1`, `scripts/fechar.ps1`, `app/rapido.py` (`SITES`) | apelidos de apps e sites — os de exemplo são meus hábitos, troque pelos seus |
 
